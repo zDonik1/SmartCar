@@ -15,15 +15,13 @@ set(SMART_CAR_TARGET SmartCarApp)
 
 add_executable(${SMART_CAR_TARGET}
     main.cpp
+    ${PERIHEADERS}
 )
 
 target_link_libraries(${SMART_CAR_TARGET}
-    PUBLIC
-        Qt${QT_VERSION_MAJOR}::Core
-
-    PRIVATE
-        peripherals
-        BT::behaviortree_cpp_v3
+    Qt${QT_VERSION_MAJOR}::Core
+    BT::behaviortree_cpp_v3
+    peripherals
 )
 
 
