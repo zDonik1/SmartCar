@@ -13,5 +13,5 @@
 class ICamera
 {
 public:
-    virtual FramePtr newFrame() const = 0;
+    virtual bool start() = 0;
 };

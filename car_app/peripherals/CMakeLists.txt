@@ -17,11 +17,25 @@ set(HEADERS
     include/icamera.h
     include/iframe.h
     include/picamera.h
+    src/cameraworker.h
 )
 
 set(SOURCES
     src/picamera.cpp
+    src/cameraworker.cpp
 )
+
+
+# ==== FINDING PACKAGES =========================================
+
+# wiringpi
+find_package(WiringPI REQUIRED)
+
+# pkg-config
+find_package(PkgConfig REQUIRED)
+
+# libcamera
+pkg_check_modules(LIBCAMERA REQUIRED IMPORTED_TARGET libcamera)
 
 
 # ==== MAKING TARGET =========================================
@@ -34,6 +48,7 @@ target_link_libraries(${PERIPHERALS_TARGET}
 
     PRIVATE
         wiringPi
+        PkgConfig::LIBCAMERA
         ${OpenCV_LIBS}
 )
 
@@ -42,5 +57,6 @@ target_include_directories(${PERIPHERALS_TARGET}
         include
 
     PRIVATE
+        src
         ${OpenCV_INCLUDE_DIRS}
 )
