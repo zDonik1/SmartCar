@@ -19,11 +19,11 @@ add_executable(${SMART_CAR_TARGET}
 
 target_link_libraries(${SMART_CAR_TARGET}
     PUBLIC
-    Qt${QT_VERSION_MAJOR}::Core
+        Qt${QT_VERSION_MAJOR}::Core
 
     PRIVATE
-    peripherals
-    BT::behaviortree_cpp_v3
+        peripherals
+        BT::behaviortree_cpp_v3
 )
 
 

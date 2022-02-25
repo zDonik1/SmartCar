@@ -5,18 +5,13 @@
  *
  *************************************************************************/
 
-#include <QCoreApplication>
-#include <QDebug>
+#include <functional>
+#include <memory>
 
-#include <picamera.h>
+#include "iframe.h"
 
-int main(int argc, char *argv[])
+class ICamera
 {
-    QCoreApplication a(argc, argv);
-
-    PICamera camera;
-
-    qDebug() << "Hello from Qt";
-
-    return a.exec();
-}
+public:
+    virtual FramePtr newFrame() const = 0;
+};

@@ -5,18 +5,21 @@
  *
  *************************************************************************/
 
-#include <QCoreApplication>
 #include <QDebug>
+
+#include <opencv2/videoio.hpp>
 
 #include <picamera.h>
 
-int main(int argc, char *argv[])
+PICamera::PICamera()
 {
-    QCoreApplication a(argc, argv);
+    qDebug() << m_capture->open("/dev/video0");
+}
 
-    PICamera camera;
+PICamera::~PICamera()
+{
+}
 
-    qDebug() << "Hello from Qt";
-
-    return a.exec();
+FramePtr PICamera::newFrame() const
+{
 }

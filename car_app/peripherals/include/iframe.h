@@ -5,18 +5,11 @@
  *
  *************************************************************************/
 
-#include <QCoreApplication>
-#include <QDebug>
+#pragma once
 
-#include <picamera.h>
+#include <memory>
 
-int main(int argc, char *argv[])
-{
-    QCoreApplication a(argc, argv);
+class IFrame
+{};
 
-    PICamera camera;
-
-    qDebug() << "Hello from Qt";
-
-    return a.exec();
-}
+using FramePtr = std::unique_ptr<IFrame>;
