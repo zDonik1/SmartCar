@@ -22,6 +22,8 @@ set(HEADERS
     include/iussensor.h
     include/ussensor.h
     src/usthread.h
+    include/iirsensor.h
+    include/irsensor.h
 )
 
 set(SOURCES
@@ -29,6 +31,7 @@ set(SOURCES
     src/motoractuator.cpp
     src/ussensor.cpp
     src/usthread.cpp
+    src/irsensor.cpp
 )
 
 # ==== MAKING TARGET =========================================
