@@ -13,7 +13,6 @@
 
 PICamera::PICamera()
 {
-    qDebug() << m_capture->open("/dev/video0");
 }
 
 PICamera::~PICamera()

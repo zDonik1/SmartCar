@@ -17,12 +17,22 @@ set(HEADERS
     include/icamera.h
     include/iframe.h
     include/picamera.h
+    include/imotoractuator.h
+    include/motoractuator.h
+    include/iussensor.h
+    include/ussensor.h
+    src/usthread.h
+    include/iirsensor.h
+    include/irsensor.h
 )
 
 set(SOURCES
     src/picamera.cpp
+    src/motoractuator.cpp
+    src/ussensor.cpp
+    src/usthread.cpp
+    src/irsensor.cpp
 )
-
 
 # ==== MAKING TARGET =========================================
 

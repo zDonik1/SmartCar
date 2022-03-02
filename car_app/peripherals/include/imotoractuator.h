@@ -1,23 +1,22 @@
 /**************************************************************************
  *
  *   @author Doniyorbek Tokhirov <tokhirovdoniyor@gmail.com>
- *   @date 24/02/2022
+ *   @date 25/02/2022
  *
  *************************************************************************/
 
 #pragma once
 
-#include <icamera.h>
-
-namespace cv {
-class VideoCapture;
-}
-
-class PICamera : public ICamera
+class IMotorActuator
 {
 public:
-    PICamera();
-    virtual ~PICamera();
+    enum class Direction {
+        Forward,
+        Backward,
+        Still,
+    };
 
-    virtual FramePtr newFrame() const override;
+public:
+    virtual void setDirection(Direction direction) = 0;
+    virtual void setSpeed(float speed) = 0;
 };
