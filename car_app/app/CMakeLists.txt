@@ -22,6 +22,7 @@ target_link_libraries(${SMART_CAR_TARGET}
     Qt${QT_VERSION_MAJOR}::Core
     BT::behaviortree_cpp_v3
     peripherals
+    services
 )
 
 
