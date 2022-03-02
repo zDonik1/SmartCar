@@ -16,7 +16,7 @@
 MotorActuator::MotorActuator(int forwardPinN, int backwardPinN)
 {
     if (wiringPiSetup() < 0) {
-        qDebug() << "Wiring PI was not set up!";
+        qWarning() << "Wiring PI was not set up!";
         return;
     }
 

@@ -19,11 +19,16 @@ set(HEADERS
     include/picamera.h
     include/imotoractuator.h
     include/motoractuator.h
+    include/iussensor.h
+    include/ussensor.h
+    src/usthread.h
 )
 
 set(SOURCES
     src/picamera.cpp
     src/motoractuator.cpp
+    src/ussensor.cpp
+    src/usthread.cpp
 )
 
 # ==== MAKING TARGET =========================================

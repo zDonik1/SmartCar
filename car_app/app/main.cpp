@@ -9,27 +9,27 @@
 #include <QThread>
 #include <QDebug>
 
-#include <motoractuator.h>
+#include <ussensor.h>
+
+constexpr auto MOTOR_LEFT_FORWARD_PIN = 1;
+constexpr auto MOTOR_LEFT_BACKWARD_PIN = 4;
+constexpr auto MOTOR_RIGHT_FORWARD_PIN = 5;
+constexpr auto MOTOR_RIGHT_BACKWARD_PIN = 6;
+
+constexpr auto US_TRIGGER_PIN = 28;
+constexpr auto US_ECHO_PIN = 29;
 
 int main(int argc, char *argv[])
 {
     QCoreApplication a(argc, argv);
 
-    MotorActuator leftMotors(1, 4);
-    MotorActuator rightMotors(5, 6);
-    leftMotors.setSpeed(1.0);
-    rightMotors.setSpeed(1.0);
+    USSensor usSensor(US_TRIGGER_PIN, US_ECHO_PIN);
+    usSensor.start();
+    usSensor.setThreshold(30);
 
-    leftMotors.setDirection(MotorActuator::Direction::Forward);
-    rightMotors.setDirection(MotorActuator::Direction::Forward);
-    QThread::sleep(1);
-
-    leftMotors.setDirection(MotorActuator::Direction::Backward);
-    rightMotors.setDirection(MotorActuator::Direction::Backward);
-    QThread::sleep(1);
-
-    leftMotors.setDirection(MotorActuator::Direction::Still);
-    rightMotors.setDirection(MotorActuator::Direction::Still);
+    QObject::connect(&usSensor, &USSensor::thresholdCrossed, &a, [&usSensor](bool less) {
+        qDebug() << (less ? "less" : "more") << usSensor.distance();
+    });
 
     return a.exec();
 }
