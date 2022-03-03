@@ -6,10 +6,14 @@
  *************************************************************************/
 
 #include <QCoreApplication>
-#include <QThread>
+#include <QTimer>
 #include <QDebug>
 
-#include <irsensor.h>
+#include <movement.h>
+
+#include <motoractuator.h>
+
+using namespace std;
 
 constexpr auto MOTOR_LEFT_FORWARD_PIN = 1;
 constexpr auto MOTOR_LEFT_BACKWARD_PIN = 4;
@@ -30,12 +34,14 @@ int main(int argc, char *argv[])
 {
     QCoreApplication a(argc, argv);
 
-    IRSensor irSensor(IR_TRACER_LEFT_PIN);
-    irSensor.start();
+    Movement movement(std::make_unique<MotorActuator>(MOTOR_LEFT_FORWARD_PIN,
+                                                      MOTOR_LEFT_BACKWARD_PIN),
+                      std::make_unique<MotorActuator>(MOTOR_RIGHT_FORWARD_PIN,
+                                                      MOTOR_RIGHT_BACKWARD_PIN));
 
-    QObject::connect(&irSensor, &IRSensor::isBlockedChanged, &a, [&irSensor]{
-        qDebug() << irSensor.isBlocked();
-    });
+    movement.look(IMovement::LookDirection::Right);
+
+    QTimer::singleShot(10'000, &a, &QCoreApplication::quit);
 
     return a.exec();
 }
