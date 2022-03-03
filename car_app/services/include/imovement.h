@@ -15,15 +15,14 @@ class IMovement : public QObject
 
 public:
     enum class MoveDirection { Forwad, Backward };
-    enum class LookDirection { Left, Right };
+    Q_ENUM(MoveDirection)
+    enum class TurnDirection { Left, Right };
+    Q_ENUM(TurnDirection)
 
 public:
     explicit IMovement(QObject *parent = nullptr) : QObject(parent) {}
 
     virtual void move(MoveDirection direction) = 0;
-    virtual void look(LookDirection direction) = 0;
+    virtual void turn(TurnDirection direction) = 0;
     virtual void stop() = 0;
-
-signals:
-    void lookOpFinished();
 };

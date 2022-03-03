@@ -21,7 +21,7 @@ public:
     Movement(std::unique_ptr<IMotorActuator> leftMotor, std::unique_ptr<IMotorActuator> rightMotor);
 
     virtual void move(MoveDirection direction) override;
-    virtual void look(LookDirection direction) override;
+    virtual void turn(TurnDirection direction) override;
     virtual void stop() override;
 
 private:

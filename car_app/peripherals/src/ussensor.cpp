@@ -31,9 +31,7 @@ USSensor::USSensor(int trigPinN, int echoPinN, QObject *parent)
     connect(m_thread.get(), &USThread::distanceReady, this, &USSensor::onDistanceReady);
 }
 
-USSensor::~USSensor()
-{
-}
+USSensor::~USSensor() {}
 
 void USSensor::start()
 {
@@ -43,6 +41,7 @@ void USSensor::start()
 void USSensor::stop()
 {
     m_thread->stop();
+    m_thread->wait();
 }
 
 float USSensor::distance()
@@ -60,7 +59,7 @@ void USSensor::onDistanceReady(float distance)
     m_previousDistance = m_distance;
     m_distance = distance;
 
-    if (m_threshold > 0) {
+    if (m_threshold > 0 && m_previousDistance > 0) {
         if (m_distance < m_threshold && m_previousDistance > m_threshold) {
             emit thresholdCrossed(true);
         } else if (m_distance > m_threshold && m_previousDistance < m_threshold) {

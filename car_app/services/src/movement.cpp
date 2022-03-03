@@ -8,11 +8,11 @@
 #include <movement.h>
 
 #include <QTimer>
+#include <QDebug>
 
 using namespace std;
 
 constexpr auto MAX_SPEED = 1;
-constexpr auto TURN_TIME = 300; // ms
 
 
 Movement::Movement(unique_ptr<IMotorActuator> leftMotor, unique_ptr<IMotorActuator> rightMotor)
@@ -24,29 +24,30 @@ Movement::Movement(unique_ptr<IMotorActuator> leftMotor, unique_ptr<IMotorActuat
 
 void Movement::move(MoveDirection direction)
 {
+    qDebug() << "moved to" << direction;
+
     auto motorDirection = direction == MoveDirection::Forwad ? IMotorActuator::Direction::Forward
                                                              : IMotorActuator::Direction::Backward;
     m_leftMotor->setDirection(motorDirection);
     m_rightMotor->setDirection(motorDirection);
 }
 
-void Movement::look(LookDirection direction)
+void Movement::turn(TurnDirection direction)
 {
-    m_leftMotor->setDirection(direction == LookDirection::Right
+    qDebug() << "looked at" << direction;
+
+    m_leftMotor->setDirection(direction == TurnDirection::Right
                                   ? IMotorActuator::Direction::Forward
                                   : IMotorActuator::Direction::Backward);
-    m_rightMotor->setDirection(direction == LookDirection::Right
+    m_rightMotor->setDirection(direction == TurnDirection::Right
                                    ? IMotorActuator::Direction::Backward
                                    : IMotorActuator::Direction::Forward);
-
-    QTimer::singleShot(TURN_TIME, this, [this] {
-        stop();
-        emit lookOpFinished();
-    });
 }
 
 void Movement::stop()
 {
+    qDebug() << __func__;
+
     m_leftMotor->setDirection(IMotorActuator::Direction::Still);
     m_rightMotor->setDirection(IMotorActuator::Direction::Still);
 }

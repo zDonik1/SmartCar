@@ -27,7 +27,7 @@ private:
     void setIsBlocked(bool isBlocked);
 
 private:
-    int m_pinN;
+    int m_pinN = -1;
     QTimer m_timer;
-    bool m_isBlocked;
+    bool m_isBlocked = false;
 };
