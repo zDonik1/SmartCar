@@ -21,7 +21,7 @@ set(HEADERS
     include/motoractuator.h
     include/iussensor.h
     include/ussensor.h
-    src/usthread.h
+    src/usworker.h
     include/iirsensor.h
     include/irsensor.h
 )
@@ -30,7 +30,7 @@ set(SOURCES
     src/picamera.cpp
     src/motoractuator.cpp
     src/ussensor.cpp
-    src/usthread.cpp
+    src/usworker.cpp
     src/irsensor.cpp
 )
 

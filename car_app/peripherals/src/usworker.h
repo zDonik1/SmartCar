@@ -10,24 +10,29 @@
 #include <QThread>
 #include <QElapsedTimer>
 
-class USThread : public QThread
+class USWorker : public QObject
 {
     Q_OBJECT
 
 public:
-    explicit USThread(int trigPinN, int echoPinN, QObject *parent = nullptr);
+    /** timeout is in milliseconds */
+    USWorker(int trigPinN, int echoPinN, int timeout = 100, QObject *parent = nullptr);
 
+    void start();
     void stop();
 
-protected:
-    virtual void run() override;
 
 signals:
-    void distanceReady(float distance);
+    void distanceReady(float distance, QPrivateSignal = {});
+    void operate(QPrivateSignal = {});
+
+private slots:
+    void requestDistance();
 
 private:
     int m_trigPinN = -1;
     int m_echoPinN = -1;
+    int m_timeout = 100; // timeout for getting next distance, ms
     bool m_isRunning = false;
     QElapsedTimer m_elapsedTimer;
 };

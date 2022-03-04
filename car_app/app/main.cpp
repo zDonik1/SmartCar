@@ -9,9 +9,7 @@
 #include <QTimer>
 #include <QDebug>
 
-#include <movement.h>
-
-#include <motoractuator.h>
+#include <ussensor.h>
 
 using namespace std;
 
@@ -34,14 +32,8 @@ int main(int argc, char *argv[])
 {
     QCoreApplication a(argc, argv);
 
-    Movement movement(std::make_unique<MotorActuator>(MOTOR_LEFT_FORWARD_PIN,
-                                                      MOTOR_LEFT_BACKWARD_PIN),
-                      std::make_unique<MotorActuator>(MOTOR_RIGHT_FORWARD_PIN,
-                                                      MOTOR_RIGHT_BACKWARD_PIN));
-
-    movement.look(IMovement::LookDirection::Right);
-
-    QTimer::singleShot(10'000, &a, &QCoreApplication::quit);
+    USSensor sensor(US_TRIGGER_PIN, US_ECHO_PIN);
+    sensor.start();
 
     return a.exec();
 }

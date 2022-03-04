@@ -11,14 +11,14 @@
 
 #include <wiringPi.h>
 
-#include "usthread.h"
+#include "usworker.h"
 
 using namespace std;
 
 
 USSensor::USSensor(int trigPinN, int echoPinN, QObject *parent)
     : IUSSensor(parent)
-    , m_thread(make_unique<USThread>(trigPinN, echoPinN))
+    , m_worker(make_unique<USWorker>(trigPinN, echoPinN))
 {
     if (wiringPiSetup() < 0) {
         qWarning() << "Wiring PI was not set up!";
@@ -28,42 +28,38 @@ USSensor::USSensor(int trigPinN, int echoPinN, QObject *parent)
     pinMode(trigPinN, OUTPUT);
     pinMode(echoPinN, INPUT);
 
-    connect(m_thread.get(), &USThread::distanceReady, this, &USSensor::onDistanceReady);
+    m_worker->moveToThread(&m_thread);
+
+    connect(m_worker.get(), &USWorker::distanceReady, this, [this](float distance) {
+        m_distance = distance;
+        qDebug() << distance;
+        emit distanceChanged();
+    });
 }
 
 USSensor::~USSensor() {}
 
 void USSensor::start()
 {
-    m_thread->start();
+    if (!m_thread.isRunning()) {
+        m_thread.start();
+    }
+    m_worker->start();
+}
+
+void USSensor::pause()
+{
+    m_worker->stop();
 }
 
 void USSensor::stop()
 {
-    m_thread->stop();
-    m_thread->wait();
+    m_worker->stop();
+    m_thread.quit();
+    m_thread.wait();
 }
 
-float USSensor::distance()
+float USSensor::distance() const
 {
     return m_distance;
-}
-
-void USSensor::setThreshold(float threshold)
-{
-    m_threshold = threshold;
-}
-
-void USSensor::onDistanceReady(float distance)
-{
-    m_previousDistance = m_distance;
-    m_distance = distance;
-
-    if (m_threshold > 0 && m_previousDistance > 0) {
-        if (m_distance < m_threshold && m_previousDistance > m_threshold) {
-            emit thresholdCrossed(true);
-        } else if (m_distance > m_threshold && m_previousDistance < m_threshold) {
-            emit thresholdCrossed(false);
-        }
-    }
 }

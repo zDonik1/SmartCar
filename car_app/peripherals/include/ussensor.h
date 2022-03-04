@@ -15,7 +15,7 @@
 #include <iussensor.h>
 
 
-class USThread;
+class USWorker;
 
 class USSensor : public IUSSensor
 {
@@ -26,16 +26,12 @@ public:
     virtual ~USSensor();
 
     virtual void start() override;
+    virtual void pause() override;
     virtual void stop() override;
-    virtual float distance() override;
-    virtual void setThreshold(float threshold) override;
-
-private slots:
-    void onDistanceReady(float distance);
+    virtual float distance() const override;
 
 private:
-    std::unique_ptr<USThread> m_thread;
+    std::unique_ptr<USWorker> m_worker;
+    QThread m_thread;
     float m_distance = -1;
-    float m_threshold = -1;
-    float m_previousDistance = -1;
 };
