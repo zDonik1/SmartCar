@@ -17,7 +17,6 @@ constexpr auto SPEED_OF_SOUND = 34'300; // cm/s
 constexpr auto US_SENSOR_TIMEOUT = 35; // ms
 constexpr auto TRIGGER_PREP_TIME = 10; // ms
 constexpr auto TRIGGER_ACTIVE_TIME = 10; // us
-constexpr auto COUNTER_TIMEOUT = 5000;
 
 
 float travelTime(float elapsedTime)
@@ -63,30 +62,23 @@ void USWorker::requestDistance()
     QThread::usleep(TRIGGER_ACTIVE_TIME);
     digitalWrite(m_trigPinN, LOW);
 
-    int counter = 0;
-    while (digitalRead(m_echoPinN) == LOW && counter < COUNTER_TIMEOUT) {
-        ++counter;
-    }
+    m_elapsedTimer.start();
+    while (digitalRead(m_echoPinN) == LOW && m_elapsedTimer.elapsed() < US_SENSOR_TIMEOUT)
+        ;
 
-    if (counter >= COUNTER_TIMEOUT) {
+    if (m_elapsedTimer.elapsed() >= US_SENSOR_TIMEOUT) {
         requestDistance();
         return;
     }
 
     m_elapsedTimer.start();
+    while (digitalRead(m_echoPinN) == HIGH && m_elapsedTimer.elapsed() < US_SENSOR_TIMEOUT)
+        ;
 
-    counter = 0;
-    while (digitalRead(m_echoPinN) == HIGH && counter < COUNTER_TIMEOUT) {
-        ++counter;
-    }
-
-    if (counter >= COUNTER_TIMEOUT) {
+    if (m_elapsedTimer.elapsed() >= US_SENSOR_TIMEOUT) {
         requestDistance();
         return;
     }
-
-    if (m_elapsedTimer.elapsed() > US_SENSOR_TIMEOUT)
-        return;
 
     emit distanceReady(travelTime(m_elapsedTimer.nsecsElapsed()) * SPEED_OF_SOUND);
     requestDistance();

@@ -9,6 +9,7 @@
 #include <QTimer>
 #include <QDebug>
 
+#include <usobstacledetector.h>
 #include <ussensor.h>
 
 using namespace std;
@@ -31,6 +32,17 @@ constexpr auto IR_TRACER_RIGHT_PIN = 11;
 int main(int argc, char *argv[])
 {
     QCoreApplication a(argc, argv);
+
+    //    USObstacleDetector detector(make_unique<USSensor>(US_TRIGGER_PIN, US_ECHO_PIN));
+    //    detector.addThreshold(15);
+    //    detector.addThreshold(30);
+    //    detector.addThreshold(45);
+
+    //    QObject::connect(&detector, &USObstacleDetector::thresholdCrossed, &a, [&](int index, bool less) {
+    //        qDebug() << index << detector.thresholds().at(index) << less;
+    //    });
+
+    //    detector.start();
 
     USSensor sensor(US_TRIGGER_PIN, US_ECHO_PIN);
     sensor.start();
