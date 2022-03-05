@@ -9,8 +9,8 @@
 #include <QDebug>
 #include <QTimer>
 
-#include <usobstacledetector.h>
-#include <ussensor.h>
+#include <doublelinetracer.h>
+#include <irsensor.h>
 
 using namespace std;
 
@@ -32,13 +32,11 @@ int main(int argc, char *argv[])
 {
     QCoreApplication a(argc, argv);
 
-    USObstacleDetector detector(make_unique<USSensor>(US_TRIGGER_PIN, US_ECHO_PIN));
-    detector.addThreshold(15);
-    detector.addThreshold(30);
-    detector.addThreshold(45);
+    DoubleLineTracer detector(make_unique<IRSensor>(IR_TRACER_LEFT_PIN),
+                              make_unique<IRSensor>(IR_TRACER_RIGHT_PIN));
 
-    QObject::connect(&detector, &USObstacleDetector::thresholdCrossed, &a, [&](int index, bool less) {
-        qDebug() << index << detector.thresholds().at(index) << less;
+    QObject::connect(&detector, &DoubleLineTracer::vectorChanged, &a, [&] {
+        qDebug() << detector.vector().x << detector.vector().y;
     });
 
     detector.start();

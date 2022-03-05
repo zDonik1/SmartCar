@@ -11,7 +11,7 @@
 
 #include <wiringPi.h>
 
-constexpr auto TIMER_INTERVAL = 50;
+constexpr auto TIMER_INTERVAL = 20; // ms
 
 
 IRSensor::IRSensor(int pinN, QObject *parent)
@@ -26,7 +26,7 @@ IRSensor::IRSensor(int pinN, QObject *parent)
 
     pinMode(m_pinN, INPUT);
 
-    m_timer.setInterval(50);
+    m_timer.setInterval(TIMER_INTERVAL);
 
     connect(&m_timer, &QTimer::timeout, this, [this]{ setIsBlocked(digitalRead(m_pinN) == LOW); });
 }
