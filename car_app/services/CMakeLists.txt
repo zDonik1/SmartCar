@@ -16,12 +16,17 @@ set(SERVICES_TARGET services)
 set(HEADERS
     include/imovement.h
     include/movement.h
+    include/iusobstacledetector.h
+    include/usobstacledetector.h
+    include/ilinetracer.h
+    include/doublelinetracer.h
 )
 
 set(SOURCES
     src/movement.cpp
+    src/usobstacledetector.cpp
+    src/doublelinetracer.cpp
 )
-
 # ==== MAKING TARGET =========================================
 
 add_library(${SERVICES_TARGET} ${HEADERS} ${SOURCES})

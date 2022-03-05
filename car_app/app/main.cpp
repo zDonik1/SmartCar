@@ -6,12 +6,11 @@
  *************************************************************************/
 
 #include <QCoreApplication>
-#include <QTimer>
 #include <QDebug>
+#include <QTimer>
 
-#include <movement.h>
-
-#include <motoractuator.h>
+#include <doublelinetracer.h>
+#include <irsensor.h>
 
 using namespace std;
 
@@ -29,19 +28,18 @@ constexpr auto IR_OBSTACLE_RIGHT_PIN = 26;
 constexpr auto IR_TRACER_LEFT_PIN = 10;
 constexpr auto IR_TRACER_RIGHT_PIN = 11;
 
-
 int main(int argc, char *argv[])
 {
     QCoreApplication a(argc, argv);
 
-    Movement movement(std::make_unique<MotorActuator>(MOTOR_LEFT_FORWARD_PIN,
-                                                      MOTOR_LEFT_BACKWARD_PIN),
-                      std::make_unique<MotorActuator>(MOTOR_RIGHT_FORWARD_PIN,
-                                                      MOTOR_RIGHT_BACKWARD_PIN));
+    DoubleLineTracer detector(make_unique<IRSensor>(IR_TRACER_LEFT_PIN),
+                              make_unique<IRSensor>(IR_TRACER_RIGHT_PIN));
 
-    movement.look(IMovement::LookDirection::Right);
+    QObject::connect(&detector, &DoubleLineTracer::vectorChanged, &a, [&] {
+        qDebug() << detector.vector().x << detector.vector().y;
+    });
 
-    QTimer::singleShot(10'000, &a, &QCoreApplication::quit);
+    detector.start();
 
     return a.exec();
 }

@@ -1,7 +1,7 @@
 /**************************************************************************
  *
  *   @author Doniyorbek Tokhirov <tokhirovdoniyor@gmail.com>
- *   @date 02/03/2022
+ *   @date 04/03/2022
  *
  *************************************************************************/
 
@@ -10,19 +10,20 @@
 #include <QObject>
 
 
-class IUSSensor : public QObject
+class IUSObstacleDetector : public QObject
 {
     Q_OBJECT
 
 public:
-    explicit IUSSensor(QObject *parent = nullptr) : QObject(parent) {}
+    explicit IUSObstacleDetector(QObject *parent = nullptr) : QObject(parent) {}
 
     virtual void start() = 0;
-    virtual void pause() = 0;
     virtual void stop() = 0;
-    virtual float distance() const = 0;
+    virtual void addThreshold(float threshold) = 0;
+    virtual void removeThreshold(int index) = 0;
+    virtual const std::vector<float> &thresholds() const = 0;
 
 signals:
     /** less is true when distance is less than threshold */
-    void distanceChanged();
+    void thresholdCrossed(int index, bool less);
 };
