@@ -15,10 +15,12 @@
 
 using namespace std;
 
+constexpr auto REQUEST_INTERVAL = 10; // ms
+
 
 USSensor::USSensor(int trigPinN, int echoPinN, QObject *parent)
     : IUSSensor(parent)
-    , m_worker(make_unique<USWorker>(trigPinN, echoPinN))
+    , m_worker(make_unique<USWorker>(trigPinN, echoPinN, REQUEST_INTERVAL))
 {
     if (wiringPiSetup() < 0) {
         qWarning() << "Wiring PI was not set up!";
@@ -32,7 +34,6 @@ USSensor::USSensor(int trigPinN, int echoPinN, QObject *parent)
 
     connect(m_worker.get(), &USWorker::distanceReady, this, [this](float distance) {
         m_distance = distance;
-        qDebug() << distance;
         emit distanceChanged();
     });
 }
