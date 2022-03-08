@@ -9,12 +9,8 @@
 
 #include <QObject>
 
+#include <vector.h>
 
-struct Vector
-{
-    float x;
-    float y;
-};
 
 class ILineTracer : public QObject
 {

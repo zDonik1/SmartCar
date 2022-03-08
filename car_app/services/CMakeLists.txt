@@ -20,6 +20,7 @@ set(HEADERS
     include/usobstacledetector.h
     include/ilinetracer.h
     include/doublelinetracer.h
+    include/vector.h
 )
 
 set(SOURCES

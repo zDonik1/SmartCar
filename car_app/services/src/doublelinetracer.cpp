@@ -48,8 +48,6 @@ const Vector &DoubleLineTracer::vector() const
 void DoubleLineTracer::sensorsUpdated()
 {
     if (m_leftSensor->isBlocked() && m_rightSensor->isBlocked()) {
-        // big brah moment
-        qDebug() << "both sensors touched line, not sure what to do";
         m_vector = {0, 0};
     } else if (m_leftSensor->isBlocked()) {
         m_vector = {1, 0};
