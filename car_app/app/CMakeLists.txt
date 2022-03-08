@@ -20,6 +20,7 @@ add_executable(${SMART_CAR_TARGET}
 target_link_libraries(${SMART_CAR_TARGET}
     peripherals
     services
+    behavior
 )
 
 
