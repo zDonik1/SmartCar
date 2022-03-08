@@ -20,12 +20,16 @@ set(HEADERS
     include/usobstacledetector.h
     include/ilinetracer.h
     include/doublelinetracer.h
+    include/iirobstacledetector.h
+    include/irobstacledetector.h
+    include/vector.h
 )
 
 set(SOURCES
     src/movement.cpp
     src/usobstacledetector.cpp
     src/doublelinetracer.cpp
+    src/irobstacledetector.cpp
 )
 # ==== MAKING TARGET =========================================
 

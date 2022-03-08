@@ -1,7 +1,7 @@
 /**************************************************************************
  *
  *   @author Doniyorbek Tokhirov <tokhirovdoniyor@gmail.com>
- *   @date 05/03/2022
+ *   @date 07/03/2022
  *
  *************************************************************************/
 
@@ -12,12 +12,12 @@
 #include <vector.h>
 
 
-class ILineTracer : public QObject
+class IIRObstacleDetector : public QObject
 {
     Q_OBJECT
 
 public:
-    explicit ILineTracer(QObject *parent = nullptr) : QObject(parent) {}
+    explicit IIRObstacleDetector(QObject *parent = nullptr) : QObject(parent) {}
 
     virtual void start() = 0;
     virtual void stop() = 0;
