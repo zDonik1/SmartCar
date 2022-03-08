@@ -34,6 +34,17 @@ set(SOURCES
     src/irsensor.cpp
 )
 
+
+# ==== FINDING PACKAGES =========================================
+
+find_package(QT NAMES Qt6 Qt5 COMPONENTS Core REQUIRED)
+find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Core REQUIRED)
+
+find_package(WiringPI REQUIRED)
+
+find_package(OpenCV REQUIRED)
+
+
 # ==== MAKING TARGET =========================================
 
 add_library(${PERIPHERALS_TARGET} ${HEADERS} ${SOURCES})

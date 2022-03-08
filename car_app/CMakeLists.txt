@@ -1,17 +1,9 @@
-# ==== FINDING PACKAGES =========================================
-
-# Qt
-find_package(QT NAMES Qt6 Qt5 COMPONENTS Core REQUIRED)
-find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Core REQUIRED)
-
-# wiringpi
-find_package(WiringPI REQUIRED)
-
-# BehaviorTree.CPP
-find_package(BehaviorTreeV3 REQUIRED)
-
-# OpenCV
-find_package(OpenCV REQUIRED)
+#*************************************************************************
+#*
+#*   @author Doniyorbek Tokhirov <tokhirovdoniyor@gmail.com>
+#*   @date 24/02/2022
+#*
+#*************************************************************************
 
 
 # ==== SUBMODULES =========================================
@@ -19,3 +11,4 @@ find_package(OpenCV REQUIRED)
 add_subdirectory(app)
 add_subdirectory(peripherals)
 add_subdirectory(services)
+add_subdirectory(behavior)

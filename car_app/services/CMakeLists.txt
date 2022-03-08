@@ -31,6 +31,14 @@ set(SOURCES
     src/doublelinetracer.cpp
     src/irobstacledetector.cpp
 )
+
+
+# ==== FINDING PACKAGES =========================================
+
+find_package(QT NAMES Qt6 Qt5 COMPONENTS Core REQUIRED)
+find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Core REQUIRED)
+
+
 # ==== MAKING TARGET =========================================
 
 add_library(${SERVICES_TARGET} ${HEADERS} ${SOURCES})
