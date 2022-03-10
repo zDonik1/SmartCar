@@ -34,11 +34,13 @@ IRSensor::IRSensor(int pinN, QObject *parent)
 void IRSensor::start()
 {
     m_timer.start();
+    emit isBlockedChanged();
 }
 
 void IRSensor::stop()
 {
     m_timer.stop();
+    m_isBlocked = false;
 }
 
 bool IRSensor::isBlocked()

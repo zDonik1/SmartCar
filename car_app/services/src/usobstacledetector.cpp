@@ -36,6 +36,7 @@ void USObstacleDetector::start()
 void USObstacleDetector::stop()
 {
     m_sensor->pause();
+    m_previousDistance = -1;
 }
 
 void USObstacleDetector::addThreshold(float threshold)

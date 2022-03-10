@@ -28,6 +28,9 @@ private slots:
     void sensorsUpdated();
 
 private:
+    void setVector(Vector vector);
+
+private:
     std::unique_ptr<IIRSensor> m_leftSensor;
     std::unique_ptr<IIRSensor> m_rightSensor;
     Vector m_vector;

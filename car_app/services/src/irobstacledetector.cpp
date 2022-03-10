@@ -35,6 +35,7 @@ void IRObstacleDetector::stop()
 {
     m_leftSensor->stop();
     m_rightSensor->stop();
+    m_vector = {0, 0};
 }
 
 const Vector &IRObstacleDetector::vector() const
@@ -45,13 +46,20 @@ const Vector &IRObstacleDetector::vector() const
 void IRObstacleDetector::sensorsUpdated()
 {
     if (m_leftSensor->isBlocked() && m_rightSensor->isBlocked()) {
-        m_vector = {0, -1};
+        setVector({0, -1});
     } else if (m_leftSensor->isBlocked()) {
-        m_vector = {1, 0};
+        setVector({1, 0});
     } else if (m_rightSensor->isBlocked()) {
-        m_vector = {-1, 0};
+        setVector({-1, 0});
     } else {
-        m_vector = {0, 1};
+        setVector({0, 1});
     }
-    emit vectorChanged();
+}
+
+void IRObstacleDetector::setVector(Vector vector)
+{
+    if (m_vector != vector) {
+        m_vector = vector;
+        emit vectorChanged();
+    }
 }

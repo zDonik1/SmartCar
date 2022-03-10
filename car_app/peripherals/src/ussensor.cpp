@@ -51,11 +51,12 @@ void USSensor::start()
 void USSensor::pause()
 {
     m_worker->stop();
+    m_distance = -1;
 }
 
 void USSensor::stop()
 {
-    m_worker->stop();
+    pause();
     m_thread.quit();
     m_thread.wait();
 }
