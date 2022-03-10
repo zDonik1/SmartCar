@@ -33,6 +33,6 @@ private:
     int m_trigPinN = -1;
     int m_echoPinN = -1;
     int m_timeout = 100; // timeout for getting next distance, ms
-    bool m_isRunning = false;
+    std::atomic_bool m_isRunning = false;
     QElapsedTimer m_elapsedTimer;
 };

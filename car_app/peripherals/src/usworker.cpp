@@ -33,13 +33,13 @@ USWorker::USWorker(int trigPinN, int echoPinN, int timeout, QObject *parent)
 
 void USWorker::start()
 {
-    m_isRunning = true;
+    m_isRunning.store(true);
     emit operate();
 }
 
 void USWorker::stop()
 {
-    m_isRunning = false;
+    m_isRunning.store(false);
 }
 
 void USWorker::requestDistance()
