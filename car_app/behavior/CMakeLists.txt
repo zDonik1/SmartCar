@@ -36,6 +36,7 @@ target_link_libraries(${BEHAVIOR_TARGET}
     PUBLIC
         Qt${QT_VERSION_MAJOR}::Core
         BT::behaviortree_cpp_v3
+        services
 )
 
 target_include_directories(${BEHAVIOR_TARGET}

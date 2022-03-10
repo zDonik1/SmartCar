@@ -9,8 +9,7 @@
 #include <QDebug>
 #include <QTimer>
 
-#include <doublelinetracer.h>
-#include <irsensor.h>
+#include <controller.h>
 
 using namespace std;
 
@@ -32,14 +31,8 @@ int main(int argc, char *argv[])
 {
     QCoreApplication a(argc, argv);
 
-    DoubleLineTracer detector(make_unique<IRSensor>(IR_TRACER_LEFT_PIN),
-                              make_unique<IRSensor>(IR_TRACER_RIGHT_PIN));
-
-    QObject::connect(&detector, &DoubleLineTracer::vectorChanged, &a, [&] {
-        qDebug() << detector.vector().x << detector.vector().y;
-    });
-
-    detector.start();
+    Controller controller;
+    controller.makeTreeFromFile("");
 
     return a.exec();
 }
