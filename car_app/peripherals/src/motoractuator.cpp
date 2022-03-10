@@ -5,9 +5,9 @@
  *
  *************************************************************************/
 
-#include <QDebug>
-
 #include <motoractuator.h>
+
+#include <QDebug>
 
 #include <wiringPi.h>
 #include <softPwm.h>
@@ -30,39 +30,12 @@ MotorActuator::MotorActuator(int forwardPinN, int backwardPinN)
     softPwmCreate(m_backwardPinN, MIN_SPEED, MAX_SPEED);
 }
 
-MotorActuator::~MotorActuator()
-{
-}
+MotorActuator::~MotorActuator() {}
 
-void MotorActuator::setDirection(Direction direction)
+void MotorActuator::setValue(float value)
 {
-    m_direction = direction;
-    updateMotors();
-}
-
-void MotorActuator::setSpeed(float speed)
-{
-    m_speed = speed;
-    updateMotors();
-}
-
-void MotorActuator::updateMotors()
-{
-    switch (m_direction) {
-    case Direction::Forward: {
-        softPwmWrite(m_forwardPinN, MAX_SPEED * m_speed);
-        softPwmWrite(m_backwardPinN, MIN_SPEED);
-        break;
-    }
-    case Direction::Backward: {
-        softPwmWrite(m_forwardPinN, MIN_SPEED);
-        softPwmWrite(m_backwardPinN, MAX_SPEED * m_speed);
-        break;
-    }
-    case Direction::Still: {
-        softPwmWrite(m_forwardPinN, MIN_SPEED);
-        softPwmWrite(m_backwardPinN, MIN_SPEED);
-        break;
-    }
-    }
+    value = std::clamp(value, -1.f, 1.f);
+    const auto speed = MAX_SPEED * std::abs(value);
+    softPwmWrite(m_forwardPinN, value > 0 ? speed : MIN_SPEED);
+    softPwmWrite(m_backwardPinN, value < 0 ? speed : MIN_SPEED);
 }

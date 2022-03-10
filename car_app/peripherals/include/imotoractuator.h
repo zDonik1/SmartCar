@@ -10,13 +10,5 @@
 class IMotorActuator
 {
 public:
-    enum class Direction {
-        Forward,
-        Backward,
-        Still,
-    };
-
-public:
-    virtual void setDirection(Direction direction) = 0;
-    virtual void setSpeed(float speed) = 0;
+    virtual void setValue(float value) = 0;
 };

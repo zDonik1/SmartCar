@@ -7,47 +7,71 @@
 
 #include <movement.h>
 
+#include <cmath>
+
 #include <QTimer>
-#include <QDebug>
 
 using namespace std;
 
 constexpr auto MAX_SPEED = 1;
 
+inline auto invLerp(float from, float to, float value)
+{
+    return (value - from) / (to - from);
+}
+
+inline auto lerp(float a, float b, float w)
+{
+    return a + w * (b - a);
+}
+
+inline auto remap(float origFrom, float origTo, float targetFrom, float targetTo, float value)
+{
+    float rel = invLerp(origFrom, origTo, value);
+    return lerp(targetFrom, targetTo, rel);
+}
+
+/**
+ * If we start turning from 0 degress anticlockwise
+ * I Quadrant = 1.0
+ * II Quadrant = 1.0 -> 0.0 -> -1.0
+ * III Quadrant = -1.0
+ * IV Quadrant = -1.0 -> 0.0 -> 1
+ */
+inline auto leftMotorRatioForVector(Vector vector)
+{
+    const auto angle = vector.angle();
+    if (angle > -180 && angle <= -90) {
+        return -1.f;
+    } else if (angle <= 0) {
+        return remap(-90, 0, -1, 1, angle);
+    } else if (angle <= 90) {
+        return 1.f;
+    } else if (angle <= 180) {
+        return remap(90, 180, 1, -1, angle);
+    } else {
+        return 0.f;
+    }
+}
+
 
 Movement::Movement(unique_ptr<IMotorActuator> leftMotor, unique_ptr<IMotorActuator> rightMotor)
     : m_leftMotor(std::move(leftMotor)), m_rightMotor(std::move(rightMotor))
+{}
+
+void Movement::move(Vector vector)
 {
-    m_leftMotor->setSpeed(MAX_SPEED);
-    m_rightMotor->setSpeed(MAX_SPEED);
-}
+    if (vector.isZero()) {
+        stop();
+        return;
+    }
 
-void Movement::move(MoveDirection direction)
-{
-    qDebug() << "moved to" << direction;
-
-    auto motorDirection = direction == MoveDirection::Forwad ? IMotorActuator::Direction::Forward
-                                                             : IMotorActuator::Direction::Backward;
-    m_leftMotor->setDirection(motorDirection);
-    m_rightMotor->setDirection(motorDirection);
-}
-
-void Movement::turn(TurnDirection direction)
-{
-    qDebug() << "looked at" << direction;
-
-    m_leftMotor->setDirection(direction == TurnDirection::Right
-                                  ? IMotorActuator::Direction::Forward
-                                  : IMotorActuator::Direction::Backward);
-    m_rightMotor->setDirection(direction == TurnDirection::Right
-                                   ? IMotorActuator::Direction::Backward
-                                   : IMotorActuator::Direction::Forward);
+    m_leftMotor->setValue(leftMotorRatioForVector(vector));
+    m_rightMotor->setValue(leftMotorRatioForVector({-vector.x, vector.y}));
 }
 
 void Movement::stop()
 {
-    qDebug() << __func__;
-
-    m_leftMotor->setDirection(IMotorActuator::Direction::Still);
-    m_rightMotor->setDirection(IMotorActuator::Direction::Still);
+    m_leftMotor->setValue(0);
+    m_rightMotor->setValue(0);
 }
