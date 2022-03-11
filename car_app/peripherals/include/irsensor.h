@@ -21,7 +21,11 @@ public:
 
     virtual void start() override;
     virtual void stop() override;
+    virtual void requestCheckBlocked() override;
     virtual bool isBlocked() const override;
+
+private slots:
+    void updateIsBlocked();
 
 private:
     void setIsBlocked(bool isBlocked);
@@ -30,6 +34,5 @@ private:
 private:
     int m_pinN = -1;
     QTimer m_timer;
-    bool m_hasStarted = false;
     bool m_isBlocked = false;
 };

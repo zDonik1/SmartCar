@@ -26,30 +26,34 @@ IRSensor::IRSensor(int pinN, QObject *parent)
 
     pinMode(m_pinN, INPUT);
 
-    connect(&m_timer, &QTimer::timeout, this, [this]{ setIsBlocked(readIsBlocked()); });
+    connect(&m_timer, &QTimer::timeout, this, &IRSensor::updateIsBlocked);
 }
 
 void IRSensor::start()
 {
     m_timer.start(TIMER_INTERVAL);
-    m_hasStarted = true;
     emit isBlockedChanged();
 }
 
 void IRSensor::stop()
 {
     m_timer.stop();
-    m_hasStarted = false;
     m_isBlocked = false;
+}
+
+void IRSensor::requestCheckBlocked()
+{
+    updateIsBlocked();
 }
 
 bool IRSensor::isBlocked() const
 {
-    if (m_hasStarted) {
-        return m_isBlocked;
-    } else {
-        return readIsBlocked();
-    }
+    return m_isBlocked;
+}
+
+void IRSensor::updateIsBlocked()
+{
+    setIsBlocked(readIsBlocked());
 }
 
 void IRSensor::setIsBlocked(bool isBlocked)
