@@ -19,7 +19,7 @@ public:
 
     virtual void start() = 0;
     virtual void stop() = 0;
-    virtual bool isBlocked() = 0;
+    virtual bool isBlocked() const = 0;
 
 signals:
     void isBlockedChanged();

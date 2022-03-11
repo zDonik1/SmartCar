@@ -21,13 +21,15 @@ public:
 
     virtual void start() override;
     virtual void stop() override;
-    virtual bool isBlocked() override;
+    virtual bool isBlocked() const override;
 
 private:
     void setIsBlocked(bool isBlocked);
+    bool readIsBlocked() const;
 
 private:
     int m_pinN = -1;
     QTimer m_timer;
+    bool m_hasStarted = false;
     bool m_isBlocked = false;
 };

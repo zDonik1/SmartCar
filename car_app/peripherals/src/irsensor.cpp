@@ -26,26 +26,30 @@ IRSensor::IRSensor(int pinN, QObject *parent)
 
     pinMode(m_pinN, INPUT);
 
-    m_timer.setInterval(TIMER_INTERVAL);
-
-    connect(&m_timer, &QTimer::timeout, this, [this]{ setIsBlocked(digitalRead(m_pinN) == LOW); });
+    connect(&m_timer, &QTimer::timeout, this, [this]{ setIsBlocked(readIsBlocked()); });
 }
 
 void IRSensor::start()
 {
-    m_timer.start();
+    m_timer.start(TIMER_INTERVAL);
+    m_hasStarted = true;
     emit isBlockedChanged();
 }
 
 void IRSensor::stop()
 {
     m_timer.stop();
+    m_hasStarted = false;
     m_isBlocked = false;
 }
 
-bool IRSensor::isBlocked()
+bool IRSensor::isBlocked() const
 {
-    return m_isBlocked;
+    if (m_hasStarted) {
+        return m_isBlocked;
+    } else {
+        return readIsBlocked();
+    }
 }
 
 void IRSensor::setIsBlocked(bool isBlocked)
@@ -54,4 +58,9 @@ void IRSensor::setIsBlocked(bool isBlocked)
         m_isBlocked = isBlocked;
         emit isBlockedChanged();
     }
+}
+
+bool IRSensor::readIsBlocked() const
+{
+    return digitalRead(m_pinN) == LOW;
 }
