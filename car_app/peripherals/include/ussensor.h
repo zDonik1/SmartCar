@@ -33,5 +33,6 @@ public:
 private:
     std::unique_ptr<USWorker> m_worker;
     QThread m_thread;
+    bool m_hasStarted = false;
     float m_distance = -1;
 };

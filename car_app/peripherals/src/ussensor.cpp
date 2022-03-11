@@ -46,11 +46,13 @@ void USSensor::start()
         m_thread.start();
     }
     m_worker->start();
+    m_hasStarted = true;
 }
 
 void USSensor::pause()
 {
     m_worker->stop();
+    m_hasStarted = false;
     m_distance = -1;
 }
 
@@ -63,5 +65,9 @@ void USSensor::stop()
 
 float USSensor::distance() const
 {
-    return m_distance;
+    if (m_hasStarted) {
+        return m_distance;
+    } else {
+        return m_worker->findDistance().first;
+    }
 }

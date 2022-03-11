@@ -20,14 +20,15 @@ public:
 
     void start();
     void stop();
-
+    /** Blocking function that returns distance and success */
+    std::pair<float, bool> findDistance();
 
 signals:
     void distanceReady(float distance, QPrivateSignal = {});
     void operate(QPrivateSignal = {});
 
 private slots:
-    void requestDistance();
+    void findDistanceContinuous();
 
 private:
     int m_trigPinN = -1;

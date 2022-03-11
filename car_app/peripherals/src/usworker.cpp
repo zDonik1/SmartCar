@@ -28,7 +28,7 @@ float travelTime(float elapsedTime)
 USWorker::USWorker(int trigPinN, int echoPinN, int timeout, QObject *parent)
     : QObject{parent}, m_trigPinN(trigPinN), m_echoPinN(echoPinN), m_timeout(timeout)
 {
-    connect(this, &USWorker::operate, this, &USWorker::requestDistance, Qt::QueuedConnection);
+    connect(this, &USWorker::operate, this, &USWorker::findDistanceContinuous, Qt::QueuedConnection);
 }
 
 void USWorker::start()
@@ -42,20 +42,8 @@ void USWorker::stop()
     m_isRunning.store(false);
 }
 
-void USWorker::requestDistance()
+std::pair<float, bool> USWorker::findDistance()
 {
-    // help functions
-
-    static const auto requestDistance = [this] {
-        QTimer::singleShot(m_timeout, this, &USWorker::requestDistance);
-    };
-
-
-    // business logic
-
-    if (!m_isRunning)
-        return;
-
     digitalWrite(m_trigPinN, LOW);
     QThread::msleep(TRIGGER_PREP_TIME);
     digitalWrite(m_trigPinN, HIGH);
@@ -66,20 +54,27 @@ void USWorker::requestDistance()
     while (digitalRead(m_echoPinN) == LOW && m_elapsedTimer.elapsed() < US_SENSOR_TIMEOUT)
         ;
 
-    if (m_elapsedTimer.elapsed() >= US_SENSOR_TIMEOUT) {
-        requestDistance();
-        return;
-    }
+    if (m_elapsedTimer.elapsed() >= US_SENSOR_TIMEOUT)
+        return {-1, false};
 
     m_elapsedTimer.start();
     while (digitalRead(m_echoPinN) == HIGH && m_elapsedTimer.elapsed() < US_SENSOR_TIMEOUT)
         ;
 
-    if (m_elapsedTimer.elapsed() >= US_SENSOR_TIMEOUT) {
-        requestDistance();
-        return;
-    }
+    if (m_elapsedTimer.elapsed() >= US_SENSOR_TIMEOUT)
+        return {-1, false};
 
-    emit distanceReady(travelTime(m_elapsedTimer.nsecsElapsed()) * SPEED_OF_SOUND);
-    requestDistance();
+    return {travelTime(m_elapsedTimer.nsecsElapsed()) * SPEED_OF_SOUND, true};
+}
+
+void USWorker::findDistanceContinuous()
+{
+    if (!m_isRunning)
+        return;
+
+    auto [distance, success] = findDistance();
+    if (success) {
+        emit distanceReady(distance);
+    }
+    QTimer::singleShot(m_timeout, this, &USWorker::findDistanceContinuous);
 }
