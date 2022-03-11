@@ -28,13 +28,16 @@ set(SOURCES
 find_package(QT NAMES Qt6 Qt5 COMPONENTS Core REQUIRED)
 find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Core REQUIRED)
 
+find_package(BehaviorTreeV3 REQUIRED)
+
 
 # ==== MAKING TARGET =========================================
 
 add_executable(${CAR_APP_TARGET} ${HEADERS} ${SOURCES})
 
 target_link_libraries(${CAR_APP_TARGET}
-    behavior
+    BT::behaviortree_cpp_v3
+    peripherals
 )
 
 target_include_directories(${CAR_APP_TARGET}

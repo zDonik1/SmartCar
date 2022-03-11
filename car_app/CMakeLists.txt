@@ -11,4 +11,3 @@
 add_subdirectory(app)
 add_subdirectory(peripherals)
 add_subdirectory(services)
-add_subdirectory(behavior)
