@@ -20,6 +20,7 @@ public:
     virtual void start() = 0;
     virtual void pause() = 0;
     virtual void stop() = 0;
+    virtual void requestDistance() = 0;
     virtual float distance() const = 0;
 
 signals:

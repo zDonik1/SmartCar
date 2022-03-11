@@ -28,13 +28,14 @@ float travelTime(float elapsedTime)
 USWorker::USWorker(int trigPinN, int echoPinN, int timeout, QObject *parent)
     : QObject{parent}, m_trigPinN(trigPinN), m_echoPinN(echoPinN), m_timeout(timeout)
 {
-    connect(this, &USWorker::operate, this, &USWorker::findDistanceContinuous, Qt::QueuedConnection);
+    connect(this, &USWorker::startAsync, this, &USWorker::findDistanceContinuous, Qt::QueuedConnection);
+    connect(this, &USWorker::requestDistanceSignal, this, &USWorker::findDistanceOnce, Qt::QueuedConnection);
 }
 
 void USWorker::start()
 {
     m_isRunning.store(true);
-    emit operate();
+    emit startAsync();
 }
 
 void USWorker::stop()
@@ -42,7 +43,12 @@ void USWorker::stop()
     m_isRunning.store(false);
 }
 
-std::pair<float, bool> USWorker::findDistance()
+void USWorker::requestDistance()
+{
+    emit requestDistanceSignal();
+}
+
+std::pair<float, bool> USWorker::calculateDistance()
 {
     digitalWrite(m_trigPinN, LOW);
     QThread::msleep(TRIGGER_PREP_TIME);
@@ -67,14 +73,19 @@ std::pair<float, bool> USWorker::findDistance()
     return {travelTime(m_elapsedTimer.nsecsElapsed()) * SPEED_OF_SOUND, true};
 }
 
+void USWorker::findDistanceOnce()
+{
+    auto [distance, success] = calculateDistance();
+    if (success) {
+        emit distanceReady(distance);
+    }
+}
+
 void USWorker::findDistanceContinuous()
 {
     if (!m_isRunning)
         return;
 
-    auto [distance, success] = findDistance();
-    if (success) {
-        emit distanceReady(distance);
-    }
+    findDistanceOnce();
     QTimer::singleShot(m_timeout, this, &USWorker::findDistanceContinuous);
 }

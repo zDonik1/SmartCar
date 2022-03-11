@@ -20,15 +20,20 @@ public:
 
     void start();
     void stop();
-    /** Blocking function that returns distance and success */
-    std::pair<float, bool> findDistance();
+    void requestDistance();
 
 signals:
     void distanceReady(float distance, QPrivateSignal = {});
-    void operate(QPrivateSignal = {});
+    void startAsync(QPrivateSignal = {});
+    void requestDistanceSignal(QPrivateSignal = {});
 
 private slots:
+    void findDistanceOnce();
     void findDistanceContinuous();
+
+private:
+    /** Blocking function that returns distance and success */
+    std::pair<float, bool> calculateDistance();
 
 private:
     int m_trigPinN = -1;

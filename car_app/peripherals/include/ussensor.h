@@ -28,11 +28,11 @@ public:
     virtual void start() override;
     virtual void pause() override;
     virtual void stop() override;
+    virtual void requestDistance() override;
     virtual float distance() const override;
 
 private:
     std::unique_ptr<USWorker> m_worker;
     QThread m_thread;
-    bool m_hasStarted = false;
     float m_distance = -1;
 };
