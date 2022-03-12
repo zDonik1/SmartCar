@@ -40,7 +40,7 @@ add_executable(${CAR_APP_TARGET} ${HEADERS} ${SOURCES})
 
 target_link_libraries(${CAR_APP_TARGET}
     BT::behaviortree_cpp_v3
-    peripherals
+    services
 )
 
 target_include_directories(${CAR_APP_TARGET}

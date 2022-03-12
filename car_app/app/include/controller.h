@@ -13,13 +13,14 @@
 #include <QObject>
 #include <QTimer>
 
+#include <behaviortree_cpp_v3/bt_factory.h>
+
 #include <icontroller.h>
-
-
-namespace BT {
-class BehaviorTreeFactory;
-class Tree;
-} // BT
+#include <iussensor.h>
+#include <iirsensor.h>
+#include <imovement.h>
+#include <ilinetracer.h>
+#include <iirobstacledetector.h>
 
 
 class Controller : public QObject, public IController
@@ -27,8 +28,17 @@ class Controller : public QObject, public IController
     Q_OBJECT
 
 public:
-    explicit Controller(QObject *parent = nullptr);
-    virtual ~Controller();
+    Controller(std::shared_ptr<IUSSensor> usSensor,
+               std::shared_ptr<IIRSensor> leftTracerSensor,
+               std::shared_ptr<IIRSensor> rightTracerSensor,
+               std::shared_ptr<IIRSensor> leftDetectorSensor,
+               std::shared_ptr<IIRSensor> rightDetectorSensor,
+               std::unique_ptr<IMovement> movement,
+               std::unique_ptr<ILineTracer> tracer,
+               std::unique_ptr<IIRObstacleDetector> sideObstacleDetector,
+               QObject *parent = nullptr);
+
+    virtual ~Controller() override = default;
 
     virtual bool makeTreeFromFile(const std::string &filename) override;
     virtual bool makeTreeFromText(const std::string &text) override;
@@ -40,7 +50,24 @@ private slots:
     void tickTree();
 
 private:
-    std::unique_ptr<BT::BehaviorTreeFactory> m_factory;
-    std::unique_ptr<BT::Tree> m_tree;
+    void registerNodes();
+    void requestSensorsUpdate();
+
+private:
+    BT::BehaviorTreeFactory m_factory;
+    BT::Tree m_tree;
+
+    std::shared_ptr<IUSSensor> m_usSensor;
+    std::shared_ptr<IIRSensor> m_leftTracerSensor;
+    std::shared_ptr<IIRSensor> m_rightTracerSensor;
+    std::shared_ptr<IIRSensor> m_leftDetectorSensor;
+    std::shared_ptr<IIRSensor> m_rightDetectorSensor;
+
+    std::unique_ptr<IMovement> m_movement;
+    std::unique_ptr<ILineTracer> m_tracer;
+    std::unique_ptr<IIRObstacleDetector> m_sideObstacleDetector;
+
     QTimer m_tickTimer;
+    int m_obstacleCount = 0;
+    bool m_hasFinishedObstacleTwo = false;
 };
