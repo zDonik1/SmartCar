@@ -9,10 +9,10 @@
 
 using namespace std;
 
-IRObstacleDetector::IRObstacleDetector(std::unique_ptr<IIRSensor> leftSensor,
-                                       std::unique_ptr<IIRSensor> rightSensor,
+IRObstacleDetector::IRObstacleDetector(std::shared_ptr<IIRSensor> leftSensor,
+                                       std::shared_ptr<IIRSensor> rightSensor,
                                        QObject *parent)
-    : IIRObstacleDetector(parent), m_leftSensor(move(leftSensor)), m_rightSensor(move(rightSensor))
+    : IIRObstacleDetector(parent), m_leftSensor(leftSensor), m_rightSensor(rightSensor)
 {
     connect(m_leftSensor.get(),
             &IIRSensor::isBlockedChanged,

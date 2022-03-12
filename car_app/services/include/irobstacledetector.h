@@ -16,8 +16,8 @@
 class IRObstacleDetector : public IIRObstacleDetector
 {
 public:
-    IRObstacleDetector(std::unique_ptr<IIRSensor> leftSensor,
-                       std::unique_ptr<IIRSensor> rightSensor,
+    IRObstacleDetector(std::shared_ptr<IIRSensor> leftSensor,
+                       std::shared_ptr<IIRSensor> rightSensor,
                        QObject *parent = nullptr);
 
     virtual void start() override;
@@ -31,7 +31,7 @@ private:
     void setVector(Vector vector);
 
 private:
-    std::unique_ptr<IIRSensor> m_leftSensor;
-    std::unique_ptr<IIRSensor> m_rightSensor;
+    std::shared_ptr<IIRSensor> m_leftSensor;
+    std::shared_ptr<IIRSensor> m_rightSensor;
     Vector m_vector;
 };

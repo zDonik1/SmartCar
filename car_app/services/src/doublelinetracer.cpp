@@ -12,10 +12,10 @@
 using namespace std;
 
 
-DoubleLineTracer::DoubleLineTracer(std::unique_ptr<IIRSensor> leftSensor,
-                                   std::unique_ptr<IIRSensor> rightSensor,
+DoubleLineTracer::DoubleLineTracer(std::shared_ptr<IIRSensor> leftSensor,
+                                   std::shared_ptr<IIRSensor> rightSensor,
                                    QObject *parent)
-    : ILineTracer(parent), m_leftSensor(move(leftSensor)), m_rightSensor(move(rightSensor))
+    : ILineTracer(parent), m_leftSensor(leftSensor), m_rightSensor(rightSensor)
 {
     connect(m_leftSensor.get(),
             &IIRSensor::isBlockedChanged,

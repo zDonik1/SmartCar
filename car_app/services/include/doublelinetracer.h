@@ -16,8 +16,8 @@
 class DoubleLineTracer : public ILineTracer
 {
 public:
-    DoubleLineTracer(std::unique_ptr<IIRSensor> leftSensor,
-                     std::unique_ptr<IIRSensor> rightSensor,
+    DoubleLineTracer(std::shared_ptr<IIRSensor> leftSensor,
+                     std::shared_ptr<IIRSensor> rightSensor,
                      QObject *parent = nullptr);
 
     virtual void start() override;
@@ -28,7 +28,7 @@ private slots:
     void sensorsUpdated();
 
 private:
-    std::unique_ptr<IIRSensor> m_leftSensor;
-    std::unique_ptr<IIRSensor> m_rightSensor;
+    std::shared_ptr<IIRSensor> m_leftSensor;
+    std::shared_ptr<IIRSensor> m_rightSensor;
     Vector m_vector;
 };
