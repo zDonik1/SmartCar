@@ -16,12 +16,15 @@ set(CAR_APP_TARGET SmartCarApp)
 set(HEADERS
     include/icontroller.h
     include/controller.h
+    include/timeline.h
 )
 
 set(SOURCES
     src/main.cpp
     src/controller.cpp
+    src/timeline.cpp
 )
+
 
 # ==== FINDING PACKAGES =========================================
 
