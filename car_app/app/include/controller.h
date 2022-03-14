@@ -14,6 +14,7 @@
 #include <QTimer>
 
 #include <behaviortree_cpp_v3/bt_factory.h>
+#include <behaviortree_cpp_v3/loggers/bt_cout_logger.h>
 
 #include <icontroller.h>
 #include <iussensor.h>
@@ -58,6 +59,7 @@ private:
 private:
     BT::BehaviorTreeFactory m_factory;
     BT::Tree m_tree;
+    std::unique_ptr<BT::StdCoutLogger> m_logger;
 
     std::shared_ptr<IUSSensor> m_usSensor;
     std::shared_ptr<IIRSensor> m_leftTracerSensor;

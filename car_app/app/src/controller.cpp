@@ -14,7 +14,8 @@
 using namespace std;
 using namespace BT;
 
-constexpr auto TICK_INTERVAL = 20; // ms
+constexpr auto DEBUG = false;
+constexpr auto TICK_INTERVAL = DEBUG ? 250 : 20; // ms
 constexpr auto US_OBSTACLE_THRESHOLD = 15; // cm
 
 // registering custom Vector type in BehaviorTree
@@ -80,6 +81,9 @@ bool Controller::makeTreeFromText(const std::string &text)
 
 void Controller::start()
 {
+    if (DEBUG) {
+        m_logger = make_unique<StdCoutLogger>(m_tree);
+    }
     m_tickTimer.start(TICK_INTERVAL);
     requestSensorsUpdate();
 }
@@ -91,9 +95,12 @@ void Controller::stop()
 
 void Controller::tickTree()
 {
-    if (m_tree.tickRoot() != NodeStatus::RUNNING) {
-        requestSensorsUpdate();
+    if (DEBUG) {
+        qDebug() << "Ticking tree";
     }
+
+    requestSensorsUpdate();
+    m_tree.tickRoot();
 }
 
 void Controller::registerNodes()

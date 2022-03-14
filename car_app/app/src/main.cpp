@@ -14,8 +14,10 @@
 #include <irsensor.h>
 #include <motoractuator.h>
 #include <movement.h>
+#include <debugmovement.h>
 #include <doublelinetracer.h>
 #include <irobstacledetector.h>
+#include <usobstacledetector.h>
 
 using namespace std;
 
