@@ -221,6 +221,12 @@ void Controller::registerNodes()
             }
         },
         obstacleNumberPort);
+
+    m_factory.registerSimpleAction("IncrementObstacleCount", [this](TreeNode &) {
+        ++m_obstacleCount;
+        qDebug() << "incremented obstacle count to" << m_obstacleCount;
+        return NodeStatus::SUCCESS;
+    });
 }
 
 void Controller::requestSensorsUpdate()
