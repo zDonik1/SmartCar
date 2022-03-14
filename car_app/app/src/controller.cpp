@@ -40,16 +40,16 @@ Controller::Controller(std::shared_ptr<IUSSensor> usSensor,
                        std::shared_ptr<IIRSensor> rightTracerSensor,
                        std::shared_ptr<IIRSensor> leftDetectorSensor,
                        std::shared_ptr<IIRSensor> rightDetectorSensor,
-                       std::unique_ptr<IMovement> movement,
-                       std::unique_ptr<ILineTracer> tracer,
-                       std::unique_ptr<IIRObstacleDetector> sideObstacleDetector,
-                       std::unique_ptr<IUSObstacleDetector> frontObstacleDetector,
+                       std::shared_ptr<IMovement> movement,
+                       std::shared_ptr<ILineTracer> tracer,
+                       std::shared_ptr<IIRObstacleDetector> sideObstacleDetector,
+                       std::shared_ptr<IUSObstacleDetector> frontObstacleDetector,
                        QObject *parent)
     : QObject(parent), m_usSensor(usSensor), m_leftTracerSensor(leftTracerSensor),
       m_rightTracerSensor(rightTracerSensor), m_leftDetectorSensor(leftDetectorSensor),
-      m_rightDetectorSensor(rightDetectorSensor), m_movement(move(movement)),
-      m_tracer(move(tracer)), m_sideObstacleDetector(move(sideObstacleDetector)),
-      m_frontObstacleDetector(move(frontObstacleDetector))
+      m_rightDetectorSensor(rightDetectorSensor), m_movement(movement),
+      m_tracer(tracer), m_sideObstacleDetector(sideObstacleDetector),
+      m_frontObstacleDetector(frontObstacleDetector)
 {
     registerNodes();
 

@@ -35,10 +35,10 @@ public:
                std::shared_ptr<IIRSensor> rightTracerSensor,
                std::shared_ptr<IIRSensor> leftDetectorSensor,
                std::shared_ptr<IIRSensor> rightDetectorSensor,
-               std::unique_ptr<IMovement> movement,
-               std::unique_ptr<ILineTracer> tracer,
-               std::unique_ptr<IIRObstacleDetector> sideObstacleDetector,
-               std::unique_ptr<IUSObstacleDetector> frontObstacleDetector,
+               std::shared_ptr<IMovement> movement,
+               std::shared_ptr<ILineTracer> tracer,
+               std::shared_ptr<IIRObstacleDetector> sideObstacleDetector,
+               std::shared_ptr<IUSObstacleDetector> frontObstacleDetector,
                QObject *parent = nullptr);
 
     virtual ~Controller() override = default;
@@ -68,10 +68,10 @@ private:
     std::shared_ptr<IIRSensor> m_leftDetectorSensor;
     std::shared_ptr<IIRSensor> m_rightDetectorSensor;
 
-    std::unique_ptr<IMovement> m_movement;
-    std::unique_ptr<ILineTracer> m_tracer;
-    std::unique_ptr<IIRObstacleDetector> m_sideObstacleDetector;
-    std::unique_ptr<IUSObstacleDetector> m_frontObstacleDetector;
+    std::shared_ptr<IMovement> m_movement;
+    std::shared_ptr<ILineTracer> m_tracer;
+    std::shared_ptr<IIRObstacleDetector> m_sideObstacleDetector;
+    std::shared_ptr<IUSObstacleDetector> m_frontObstacleDetector;
 
     QTimer m_tickTimer;
     int m_obstacleCount = 0;

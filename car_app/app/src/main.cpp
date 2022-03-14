@@ -39,11 +39,11 @@ int main(int argc, char *argv[])
 {
     QCoreApplication a(argc, argv);
 
-    auto leftMotors = make_unique<MotorActuator>(MOTOR_LEFT_FORWARD_PIN, MOTOR_LEFT_BACKWARD_PIN);
-    auto rightMotors = make_unique<MotorActuator>(MOTOR_RIGHT_FORWARD_PIN, MOTOR_RIGHT_BACKWARD_PIN);
+    auto leftMotors = make_shared<MotorActuator>(MOTOR_LEFT_FORWARD_PIN, MOTOR_LEFT_BACKWARD_PIN);
+    auto rightMotors = make_shared<MotorActuator>(MOTOR_RIGHT_FORWARD_PIN, MOTOR_RIGHT_BACKWARD_PIN);
 
     //    auto movement = make_unique<Movement>(move(leftMotors), move(rightMotors));
-    auto movement = make_unique<DebugMovement>();
+    auto movement = make_shared<DebugMovement>();
 
     auto usSensor = make_shared<USSensor>(US_TRIGGER_PIN, US_ECHO_PIN);
 
@@ -59,9 +59,9 @@ int main(int argc, char *argv[])
                           leftDetector,
                           rightDetector,
                           move(movement),
-                          make_unique<DoubleLineTracer>(leftTracer, rightTracer),
-                          make_unique<IRObstacleDetector>(leftDetector, rightDetector),
-                          make_unique<USObstacleDetector>(usSensor));
+                          make_shared<DoubleLineTracer>(leftTracer, rightTracer),
+                          make_shared<IRObstacleDetector>(leftDetector, rightDetector),
+                          make_shared<USObstacleDetector>(usSensor));
 
     return a.exec();
 }
