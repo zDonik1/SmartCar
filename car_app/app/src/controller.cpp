@@ -9,8 +9,6 @@
 
 #include <QDebug>
 
-#include <wait.h>
-
 using namespace std;
 using namespace BT;
 
@@ -114,6 +112,9 @@ void Controller::registerNodes()
     // ---- condition nodes
 
     m_factory.registerSimpleCondition("IsObstacleInFront", [this](TreeNode &) {
+        if (m_usSensor->distance() < 0)
+            return NodeStatus::FAILURE;
+
         return m_usSensor->distance() < US_OBSTACLE_THRESHOLD ? NodeStatus::SUCCESS
                                                               : NodeStatus::FAILURE;
     });
