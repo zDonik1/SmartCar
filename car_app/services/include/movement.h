@@ -15,8 +15,6 @@
 
 class Movement : public IMovement
 {
-    Q_OBJECT
-
 public:
     Movement(std::unique_ptr<IMotorActuator> leftMotor, std::unique_ptr<IMotorActuator> rightMotor);
 

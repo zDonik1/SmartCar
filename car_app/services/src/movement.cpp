@@ -50,7 +50,7 @@ inline auto leftMotorRatioForVector(Vector vector)
     } else if (angle <= 180) {
         return remap(90, 180, 1, -1, angle);
     } else {
-        return 0.f;
+        return -1.f;
     }
 }
 
@@ -66,8 +66,8 @@ void Movement::move(Vector vector)
         return;
     }
 
-    m_leftMotor->setValue(leftMotorRatioForVector(vector));
-    m_rightMotor->setValue(leftMotorRatioForVector({-vector.x, vector.y}));
+    m_leftMotor->setValue(leftMotorRatioForVector(vector) * MAX_SPEED);
+    m_rightMotor->setValue(leftMotorRatioForVector({-vector.x, vector.y}) * MAX_SPEED);
 }
 
 void Movement::stop()

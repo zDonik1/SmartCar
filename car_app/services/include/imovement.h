@@ -7,17 +7,11 @@
 
 #pragma once
 
-#include <QObject>
-
 #include <vector.h>
 
-class IMovement : public QObject
+class IMovement
 {
-    Q_OBJECT
-
 public:
-    explicit IMovement(QObject *parent = nullptr) : QObject(parent) {}
-
     virtual void move(Vector vector) = 0;
     virtual void stop() = 0;
 };
