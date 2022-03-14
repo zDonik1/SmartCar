@@ -32,8 +32,8 @@ constexpr auto US_ECHO_PIN = 29;
 constexpr auto IR_OBSTACLE_LEFT_PIN = 27;
 constexpr auto IR_OBSTACLE_RIGHT_PIN = 26;
 
-constexpr auto IR_TRACER_LEFT_PIN = 10;
-constexpr auto IR_TRACER_RIGHT_PIN = 11;
+constexpr auto IR_TRACER_LEFT_PIN = 11;
+constexpr auto IR_TRACER_RIGHT_PIN = 10;
 
 int main(int argc, char *argv[])
 {
