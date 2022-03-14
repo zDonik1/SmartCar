@@ -19,7 +19,7 @@ class USObstacleDetector : public IUSObstacleDetector
     Q_OBJECT
 
 public:
-    USObstacleDetector(std::unique_ptr<IUSSensor> usSensor, QObject *parent = nullptr);
+    USObstacleDetector(std::shared_ptr<IUSSensor> usSensor, QObject *parent = nullptr);
     virtual ~USObstacleDetector();
 
     virtual void start() override;
@@ -32,7 +32,7 @@ private slots:
     void checkDistWithThresholds();
 
 private:
-    std::unique_ptr<IUSSensor> m_sensor;
+    std::shared_ptr<IUSSensor> m_sensor;
     std::vector<float> m_thresholds;
     QElapsedTimer m_elapsedTimer;
     float m_previousDistance = -1;

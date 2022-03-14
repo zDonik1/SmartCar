@@ -34,6 +34,7 @@ inline Vector convertFromString(StringView str)
 }
 } // namespace BT
 
+
 Controller::Controller(std::shared_ptr<IUSSensor> usSensor,
                        std::shared_ptr<IIRSensor> leftTracerSensor,
                        std::shared_ptr<IIRSensor> rightTracerSensor,
@@ -42,11 +43,13 @@ Controller::Controller(std::shared_ptr<IUSSensor> usSensor,
                        std::unique_ptr<IMovement> movement,
                        std::unique_ptr<ILineTracer> tracer,
                        std::unique_ptr<IIRObstacleDetector> sideObstacleDetector,
+                       std::unique_ptr<IUSObstacleDetector> frontObstacleDetector,
                        QObject *parent)
     : QObject(parent), m_usSensor(usSensor), m_leftTracerSensor(leftTracerSensor),
       m_rightTracerSensor(rightTracerSensor), m_leftDetectorSensor(leftDetectorSensor),
       m_rightDetectorSensor(rightDetectorSensor), m_movement(move(movement)),
-      m_tracer(move(tracer)), m_sideObstacleDetector(move(sideObstacleDetector))
+      m_tracer(move(tracer)), m_sideObstacleDetector(move(sideObstacleDetector)),
+      m_frontObstacleDetector(move(frontObstacleDetector))
 {
     registerNodes();
 

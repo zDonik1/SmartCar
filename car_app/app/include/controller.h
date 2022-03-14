@@ -21,6 +21,7 @@
 #include <imovement.h>
 #include <ilinetracer.h>
 #include <iirobstacledetector.h>
+#include <iusobstacledetector.h>
 
 
 class Controller : public QObject, public IController
@@ -36,6 +37,7 @@ public:
                std::unique_ptr<IMovement> movement,
                std::unique_ptr<ILineTracer> tracer,
                std::unique_ptr<IIRObstacleDetector> sideObstacleDetector,
+               std::unique_ptr<IUSObstacleDetector> frontObstacleDetector,
                QObject *parent = nullptr);
 
     virtual ~Controller() override = default;
@@ -66,6 +68,7 @@ private:
     std::unique_ptr<IMovement> m_movement;
     std::unique_ptr<ILineTracer> m_tracer;
     std::unique_ptr<IIRObstacleDetector> m_sideObstacleDetector;
+    std::unique_ptr<IUSObstacleDetector> m_frontObstacleDetector;
 
     QTimer m_tickTimer;
     int m_obstacleCount = 0;
