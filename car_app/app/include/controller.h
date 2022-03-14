@@ -53,6 +53,7 @@ private slots:
     void tickTree();
 
 private:
+    BT::Blackboard::Ptr createAndInitBlackboard();
     void registerNodes();
     void requestSensorsUpdate();
 

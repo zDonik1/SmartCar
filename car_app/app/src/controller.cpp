@@ -60,7 +60,7 @@ Controller::Controller(std::shared_ptr<IUSSensor> usSensor,
 bool Controller::makeTreeFromFile(const std::string &filename)
 {
     try {
-        m_tree = m_factory.createTreeFromFile(filename);
+        m_tree = m_factory.createTreeFromFile(filename, createAndInitBlackboard());
     } catch (const std::runtime_error &e) {
         qDebug() << e.what();
         return false;
@@ -71,7 +71,7 @@ bool Controller::makeTreeFromFile(const std::string &filename)
 bool Controller::makeTreeFromText(const std::string &text)
 {
     try {
-        m_tree = m_factory.createTreeFromText(text);
+        m_tree = m_factory.createTreeFromText(text, createAndInitBlackboard());
     } catch (const std::runtime_error &e) {
         qDebug() << e.what();
         return false;
@@ -101,6 +101,12 @@ void Controller::tickTree()
 
     requestSensorsUpdate();
     m_tree.tickRoot();
+}
+
+Blackboard::Ptr Controller::createAndInitBlackboard()
+{
+    auto blackboard = Blackboard::create();
+    return blackboard;
 }
 
 void Controller::registerNodes()
