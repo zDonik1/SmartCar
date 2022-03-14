@@ -37,10 +37,13 @@ int main(int argc, char *argv[])
 {
     QCoreApplication a(argc, argv);
 
-    auto movement = make_unique<Movement>(make_unique<MotorActuator>(MOTOR_LEFT_FORWARD_PIN,
-                                                                     MOTOR_LEFT_BACKWARD_PIN),
-                                          make_unique<MotorActuator>(MOTOR_RIGHT_FORWARD_PIN,
-                                                                     MOTOR_RIGHT_BACKWARD_PIN));
+    auto leftMotors = make_unique<MotorActuator>(MOTOR_LEFT_FORWARD_PIN, MOTOR_LEFT_BACKWARD_PIN);
+    auto rightMotors = make_unique<MotorActuator>(MOTOR_RIGHT_FORWARD_PIN, MOTOR_RIGHT_BACKWARD_PIN);
+
+    //    auto movement = make_unique<Movement>(move(leftMotors), move(rightMotors));
+    auto movement = make_unique<DebugMovement>();
+
+    auto usSensor = make_shared<USSensor>(US_TRIGGER_PIN, US_ECHO_PIN);
 
     auto leftTracer = make_shared<IRSensor>(IR_TRACER_LEFT_PIN);
     auto rightTracer = make_shared<IRSensor>(IR_TRACER_RIGHT_PIN);
@@ -48,15 +51,15 @@ int main(int argc, char *argv[])
     auto leftDetector = make_shared<IRSensor>(IR_OBSTACLE_LEFT_PIN);
     auto rightDetector = make_shared<IRSensor>(IR_OBSTACLE_RIGHT_PIN);
 
-    Controller controller(make_shared<USSensor>(US_TRIGGER_PIN, US_ECHO_PIN),
+    Controller controller(usSensor,
                           leftTracer,
                           rightTracer,
                           leftDetector,
                           rightDetector,
                           move(movement),
                           make_unique<DoubleLineTracer>(leftTracer, rightTracer),
-                          make_unique<IRObstacleDetector>(leftDetector, rightDetector));
-    controller.makeTreeFromFile("");
+                          make_unique<IRObstacleDetector>(leftDetector, rightDetector),
+                          make_unique<USObstacleDetector>(usSensor));
 
     return a.exec();
 }
