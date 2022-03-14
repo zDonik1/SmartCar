@@ -23,6 +23,7 @@ set(HEADERS
     include/iirobstacledetector.h
     include/irobstacledetector.h
     include/vector.h
+    include/debugmovement.h
 )
 
 set(SOURCES
@@ -30,6 +31,7 @@ set(SOURCES
     src/usobstacledetector.cpp
     src/doublelinetracer.cpp
     src/irobstacledetector.cpp
+    src/debugmovement.cpp
 )
 
 
