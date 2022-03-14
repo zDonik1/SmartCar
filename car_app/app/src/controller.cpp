@@ -15,6 +15,7 @@ using namespace BT;
 constexpr auto DEBUG = false;
 constexpr auto TICK_INTERVAL = DEBUG ? 250 : 20; // ms
 constexpr auto US_OBSTACLE_THRESHOLD = 15; // cm
+constexpr auto OBSTACLE_TO_DODGE = 2;
 
 // registering custom Vector type in BehaviorTree
 namespace BT {
@@ -109,6 +110,12 @@ Blackboard::Ptr Controller::createAndInitBlackboard()
 
 void Controller::registerNodes()
 {
+    // --- ports list
+
+    PortsList obstacleNumberPort = {InputPort<int>("obstacle_number")};
+    PortsList vectorPort = {InputPort<Vector>("vector")};
+
+
     // ---- condition nodes
 
     m_factory.registerSimpleCondition("IsObstacleInFront", [this](TreeNode &) {
@@ -131,45 +138,54 @@ void Controller::registerNodes()
                    : NodeStatus::FAILURE;
     });
 
-    m_factory.registerSimpleCondition("WhichObstacle", [this](TreeNode &self) {
-        auto obstacleNumber = self.getInput<int>("obstacle_number");
-        if (!obstacleNumber) {
-            qDebug() << "Couldn't find port: obstacle_number";
-            return NodeStatus::FAILURE;
-        }
+    m_factory.registerSimpleCondition(
+        "WhichObstacle",
+        [this](TreeNode &self) {
+            auto obstacleNumber = self.getInput<int>("obstacle_number");
+            if (!obstacleNumber) {
+                qDebug() << "Couldn't find port: obstacle_number";
+                return NodeStatus::FAILURE;
+            }
 
-        return obstacleNumber.value() == m_obstacleCount ? NodeStatus::SUCCESS
-                                                         : NodeStatus::FAILURE;
-    });
+            return obstacleNumber.value() == m_obstacleCount ? NodeStatus::SUCCESS
+                                                             : NodeStatus::FAILURE;
+        },
+        obstacleNumberPort);
 
-    m_factory.registerSimpleCondition("HasFinishedObstacle", [this](TreeNode &self) {
-        auto obstacleNumber = self.getInput<int>("obstacle_number");
-        if (!obstacleNumber) {
-            qDebug() << "Couldn't find port: obstacle_number";
-            return NodeStatus::FAILURE;
-        }
+    m_factory.registerSimpleCondition(
+        "HasFinishedObstacle",
+        [this](TreeNode &self) {
+            auto obstacleNumber = self.getInput<int>("obstacle_number");
+            if (!obstacleNumber) {
+                qDebug() << "Couldn't find port: obstacle_number";
+                return NodeStatus::FAILURE;
+            }
 
-        if (obstacleNumber.value() == 2) {
-            return m_hasFinishedObstacleTwo ? NodeStatus::SUCCESS : NodeStatus::FAILURE;
-        } else {
-            qDebug() << "Obstacle numbers other than 2 are not supported";
-            return NodeStatus::FAILURE;
-        }
-    });
-
+            if (obstacleNumber.value() == OBSTACLE_TO_DODGE) {
+                return m_hasFinishedObstacleTwo ? NodeStatus::SUCCESS : NodeStatus::FAILURE;
+            } else {
+                qDebug() << "Obstacle numbers other than" << OBSTACLE_TO_DODGE
+                         << "are not supported";
+                return NodeStatus::FAILURE;
+            }
+        },
+        obstacleNumberPort);
 
     // ---- action nodes
 
-    m_factory.registerSimpleAction("Move", [this](TreeNode &self) {
-        auto vector = self.getInput<Vector>("vector");
-        if (!vector) {
-            qDebug() << "Couldn't find port: vector";
-            return NodeStatus::FAILURE;
-        }
+    m_factory.registerSimpleAction(
+        "Move",
+        [this](TreeNode &self) {
+            auto vector = self.getInput<Vector>("vector");
+            if (!vector) {
+                qDebug() << "Couldn't find port: vector";
+                return NodeStatus::FAILURE;
+            }
 
-        m_movement->move(vector.value());
-        return NodeStatus::SUCCESS;
-    });
+            m_movement->move(vector.value());
+            return NodeStatus::SUCCESS;
+        },
+        vectorPort);
 
     m_factory.registerSimpleAction("Stop", [this](TreeNode &) {
         m_movement->stop();
@@ -186,21 +202,25 @@ void Controller::registerNodes()
         return NodeStatus::SUCCESS;
     });
 
-    m_factory.registerSimpleAction("SetFinishedObstacle", [this](TreeNode &self) {
-        auto obstacleNumber = self.getInput<int>("obstacle_number");
-        if (!obstacleNumber) {
-            qDebug() << "Couldn't find port: obstacle_number";
-            return NodeStatus::FAILURE;
-        }
+    m_factory.registerSimpleAction(
+        "SetFinishedObstacle",
+        [this](TreeNode &self) {
+            auto obstacleNumber = self.getInput<int>("obstacle_number");
+            if (!obstacleNumber) {
+                qDebug() << "Couldn't find port: obstacle_number";
+                return NodeStatus::FAILURE;
+            }
 
-        if (obstacleNumber.value() == 2) {
-            m_hasFinishedObstacleTwo = true;
-            return NodeStatus::SUCCESS;
-        } else {
-            qDebug() << "Obstacle numbers other than 2 are not supported";
-            return NodeStatus::FAILURE;
-        }
-    });
+            if (obstacleNumber.value() == OBSTACLE_TO_DODGE) {
+                m_hasFinishedObstacleTwo = true;
+                return NodeStatus::SUCCESS;
+            } else {
+                qDebug() << "Obstacle numbers other than" << OBSTACLE_TO_DODGE
+                         << "are not supported";
+                return NodeStatus::FAILURE;
+            }
+        },
+        obstacleNumberPort);
 }
 
 void Controller::requestSensorsUpdate()
