@@ -18,9 +18,8 @@ set(HEADERS
     include/movement.h
     include/iusobstacledetector.h
     include/usobstacledetector.h
-    include/ilinetracer.h
     include/doublelinetracer.h
-    include/iirobstacledetector.h
+    include/iirvectorservice.h
     include/irobstacledetector.h
     include/vector.h
     include/debugmovement.h

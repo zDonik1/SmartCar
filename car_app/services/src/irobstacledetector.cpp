@@ -12,7 +12,7 @@ using namespace std;
 IRObstacleDetector::IRObstacleDetector(std::shared_ptr<IIRSensor> leftSensor,
                                        std::shared_ptr<IIRSensor> rightSensor,
                                        QObject *parent)
-    : IIRObstacleDetector(parent), m_leftSensor(leftSensor), m_rightSensor(rightSensor)
+    : IIRVectorService(parent), m_leftSensor(leftSensor), m_rightSensor(rightSensor)
 {
     connect(m_leftSensor.get(),
             &IIRSensor::isBlockedChanged,
@@ -23,19 +23,6 @@ IRObstacleDetector::IRObstacleDetector(std::shared_ptr<IIRSensor> leftSensor,
             &IIRSensor::isBlockedChanged,
             this,
             &IRObstacleDetector::sensorsUpdated);
-}
-
-void IRObstacleDetector::start()
-{
-    m_leftSensor->start();
-    m_rightSensor->start();
-}
-
-void IRObstacleDetector::stop()
-{
-    m_leftSensor->stop();
-    m_rightSensor->stop();
-    m_vector = {0, 0};
 }
 
 const Vector &IRObstacleDetector::vector() const

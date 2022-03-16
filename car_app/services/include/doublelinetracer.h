@@ -9,19 +9,17 @@
 
 #include <memory>
 
-#include <ilinetracer.h>
+#include <iirvectorservice.h>
 #include <iirsensor.h>
 
 
-class DoubleLineTracer : public ILineTracer
+class DoubleLineTracer : public IIRVectorService
 {
 public:
     DoubleLineTracer(std::shared_ptr<IIRSensor> leftSensor,
                      std::shared_ptr<IIRSensor> rightSensor,
                      QObject *parent = nullptr);
 
-    virtual void start() override;
-    virtual void stop() override;
     virtual const Vector &vector() const override;
 
 private slots:

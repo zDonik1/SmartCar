@@ -65,6 +65,7 @@ void USSensor::stop()
 
     m_distance = -1;
     m_isRunning = false;
+    m_manualRequestMode = false;
 
     m_worker->stop();
     m_thread.quit();

@@ -41,8 +41,8 @@ Controller::Controller(std::shared_ptr<IUSSensor> usSensor,
                        std::shared_ptr<IIRSensor> leftDetectorSensor,
                        std::shared_ptr<IIRSensor> rightDetectorSensor,
                        std::shared_ptr<IMovement> movement,
-                       std::shared_ptr<ILineTracer> tracer,
-                       std::shared_ptr<IIRObstacleDetector> sideObstacleDetector,
+                       std::shared_ptr<IIRVectorService> tracer,
+                       std::shared_ptr<IIRVectorService> sideObstacleDetector,
                        std::shared_ptr<IUSObstacleDetector> frontObstacleDetector,
                        QObject *parent)
     : QObject(parent), m_usSensor(usSensor), m_leftTracerSensor(leftTracerSensor),
@@ -231,7 +231,7 @@ void Controller::registerNodes()
 
 void Controller::requestSensorsUpdate()
 {
-    m_usSensor->requestDistance();
-    m_leftTracerSensor->requestCheckBlocked();
-    m_rightTracerSensor->requestCheckBlocked();
+    m_usSensor->requestReading();
+    m_leftTracerSensor->requestReading();
+    m_rightTracerSensor->requestReading();
 }

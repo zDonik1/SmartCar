@@ -15,7 +15,7 @@ using namespace std;
 DoubleLineTracer::DoubleLineTracer(std::shared_ptr<IIRSensor> leftSensor,
                                    std::shared_ptr<IIRSensor> rightSensor,
                                    QObject *parent)
-    : ILineTracer(parent), m_leftSensor(leftSensor), m_rightSensor(rightSensor)
+    : IIRVectorService(parent), m_leftSensor(leftSensor), m_rightSensor(rightSensor)
 {
     connect(m_leftSensor.get(),
             &IIRSensor::isBlockedChanged,
@@ -26,18 +26,6 @@ DoubleLineTracer::DoubleLineTracer(std::shared_ptr<IIRSensor> leftSensor,
             &IIRSensor::isBlockedChanged,
             this,
             &DoubleLineTracer::sensorsUpdated);
-}
-
-void DoubleLineTracer::start()
-{
-    m_leftSensor->start();
-    m_rightSensor->start();
-}
-
-void DoubleLineTracer::stop()
-{
-    m_leftSensor->stop();
-    m_rightSensor->stop();
 }
 
 const Vector &DoubleLineTracer::vector() const
