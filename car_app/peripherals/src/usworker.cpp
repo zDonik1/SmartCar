@@ -25,16 +25,17 @@ float travelTime(float elapsedTime)
 }
 
 
-USWorker::USWorker(int trigPinN, int echoPinN, int timeout, QObject *parent)
-    : QObject{parent}, m_trigPinN(trigPinN), m_echoPinN(echoPinN), m_timeout(timeout)
+USWorker::USWorker(int trigPinN, int echoPinN, QObject *parent)
+    : QObject{parent}, m_trigPinN(trigPinN), m_echoPinN(echoPinN)
 {
     connect(this, &USWorker::startAsync, this, &USWorker::findDistanceContinuous, Qt::QueuedConnection);
     connect(this, &USWorker::requestDistanceSignal, this, &USWorker::findDistanceOnce, Qt::QueuedConnection);
 }
 
-void USWorker::start()
+void USWorker::start(int updateInterval)
 {
     m_isRunning.store(true);
+    m_updateInterval = updateInterval;
     emit startAsync();
 }
 
@@ -87,5 +88,5 @@ void USWorker::findDistanceContinuous()
         return;
 
     findDistanceOnce();
-    QTimer::singleShot(m_timeout, this, &USWorker::findDistanceContinuous);
+    QTimer::singleShot(m_updateInterval, this, &USWorker::findDistanceContinuous);
 }

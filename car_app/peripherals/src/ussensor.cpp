@@ -15,12 +15,10 @@
 
 using namespace std;
 
-constexpr auto REQUEST_INTERVAL = 10; // ms
-
 
 USSensor::USSensor(int trigPinN, int echoPinN, QObject *parent)
     : IUSSensor(parent)
-    , m_worker(make_unique<USWorker>(trigPinN, echoPinN, REQUEST_INTERVAL))
+    , m_worker(make_unique<USWorker>(trigPinN, echoPinN))
 {
     if (wiringPiSetup() < 0) {
         qWarning() << "Wiring PI was not set up!";
@@ -38,32 +36,46 @@ USSensor::USSensor(int trigPinN, int echoPinN, QObject *parent)
     });
 }
 
-USSensor::~USSensor() {}
-
-void USSensor::start()
+USSensor::~USSensor()
 {
+    USSensor::stop();
+}
+
+void USSensor::start(int updateInterval)
+{
+    if (m_isRunning)
+        return;
+
     if (!m_thread.isRunning()) {
         m_thread.start();
     }
-    m_worker->start();
-}
 
-void USSensor::pause()
-{
-    m_worker->stop();
-    m_distance = -1;
+    if (updateInterval != 0) {
+        m_worker->start(updateInterval);
+    } else {
+        m_manualRequestMode = true;
+    }
+    m_isRunning = true;
 }
 
 void USSensor::stop()
 {
-    pause();
+    if (!m_isRunning)
+        return;
+
+    m_distance = -1;
+    m_isRunning = false;
+
+    m_worker->stop();
     m_thread.quit();
     m_thread.wait();
 }
 
-void USSensor::requestDistance()
+void USSensor::requestReading()
 {
-    m_worker->requestDistance();
+    if (m_manualRequestMode && m_isRunning) {
+        m_worker->requestDistance();
+    }
 }
 
 float USSensor::distance() const

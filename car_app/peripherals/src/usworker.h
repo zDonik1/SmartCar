@@ -15,10 +15,9 @@ class USWorker : public QObject
     Q_OBJECT
 
 public:
-    /** timeout is in milliseconds */
-    USWorker(int trigPinN, int echoPinN, int timeout = 100, QObject *parent = nullptr);
+    USWorker(int trigPinN, int echoPinN, QObject *parent = nullptr);
 
-    void start();
+    void start(int updateInterval);
     void stop();
     void requestDistance();
 
@@ -32,13 +31,16 @@ private slots:
     void findDistanceContinuous();
 
 private:
-    /** Blocking function that returns distance and success */
+    /**
+     *  @brief It is a blocking function that calculates the distance.
+     *  @return Returns a pair of distance and success.
+     */
     std::pair<float, bool> calculateDistance();
 
 private:
     int m_trigPinN = -1;
     int m_echoPinN = -1;
-    int m_timeout = 100; // timeout for getting next distance, ms
+    int m_updateInterval = 100; // timeout for getting next distance, ms
     std::atomic_bool m_isRunning = false;
     QElapsedTimer m_elapsedTimer;
 };
