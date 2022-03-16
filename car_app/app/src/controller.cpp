@@ -14,6 +14,7 @@ using namespace BT;
 
 constexpr auto DEBUG = false;
 constexpr auto TICK_INTERVAL = DEBUG ? 250 : 20; // ms
+constexpr auto SENSOR_UPDATE_INTERVAL = 0; // ms, 0 means manual ticking
 constexpr auto US_OBSTACLE_THRESHOLD = 15; // cm
 constexpr auto OBSTACLE_TO_DODGE = 2;
 
@@ -54,6 +55,17 @@ Controller::Controller(std::shared_ptr<IUSSensor> usSensor,
     registerNodes();
 
     connect(&m_tickTimer, &QTimer::timeout, this, &Controller::tickTree);
+
+    m_sensors.push_back(m_usSensor);
+    m_sensors.push_back(m_leftTracerSensor);
+    m_sensors.push_back(m_rightTracerSensor);
+    m_sensors.push_back(m_leftDetectorSensor);
+    m_sensors.push_back(m_rightDetectorSensor);
+}
+
+Controller::~Controller()
+{
+    Controller::stop();
 }
 
 bool Controller::makeTreeFromFile(const std::string &filename)
@@ -83,13 +95,16 @@ void Controller::start()
     if (DEBUG) {
         m_logger = make_unique<StdCoutLogger>(m_tree);
     }
+
     m_tickTimer.start(TICK_INTERVAL);
+    startSensors();
     requestSensorsUpdate();
 }
 
 void Controller::stop()
 {
     m_tickTimer.stop();
+    stopSensors();
 }
 
 void Controller::tickTree()
@@ -229,9 +244,23 @@ void Controller::registerNodes()
     });
 }
 
+void Controller::startSensors()
+{
+    for (const auto &sensor : m_sensors) {
+        sensor->start(SENSOR_UPDATE_INTERVAL);
+    }
+}
+
+void Controller::stopSensors()
+{
+    for (const auto &sensor : m_sensors) {
+        sensor->stop();
+    }
+}
+
 void Controller::requestSensorsUpdate()
 {
-    m_usSensor->requestReading();
-    m_leftTracerSensor->requestReading();
-    m_rightTracerSensor->requestReading();
+    for (const auto &sensor : m_sensors) {
+        sensor->requestReading();
+    }
 }

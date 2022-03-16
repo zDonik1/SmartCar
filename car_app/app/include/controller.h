@@ -40,7 +40,7 @@ public:
                std::shared_ptr<IUSObstacleDetector> frontObstacleDetector,
                QObject *parent = nullptr);
 
-    virtual ~Controller() override = default;
+    virtual ~Controller() override;
 
     virtual bool makeTreeFromFile(const std::string &filename) override;
     virtual bool makeTreeFromText(const std::string &text) override;
@@ -54,6 +54,8 @@ private slots:
 private:
     BT::Blackboard::Ptr createAndInitBlackboard();
     void registerNodes();
+    void startSensors();
+    void stopSensors();
     void requestSensorsUpdate();
 
 private:
@@ -66,6 +68,8 @@ private:
     std::shared_ptr<IIRSensor> m_rightTracerSensor;
     std::shared_ptr<IIRSensor> m_leftDetectorSensor;
     std::shared_ptr<IIRSensor> m_rightDetectorSensor;
+
+    std::vector<std::shared_ptr<ISensor>> m_sensors;
 
     std::shared_ptr<IMovement> m_movement;
     std::shared_ptr<IIRVectorService> m_tracer;
