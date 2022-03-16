@@ -24,6 +24,7 @@ set(HEADERS
     src/usworker.h
     include/iirsensor.h
     include/irsensor.h
+    include/isensor.h
 )
 
 set(SOURCES
