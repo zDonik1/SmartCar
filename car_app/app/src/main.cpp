@@ -16,7 +16,7 @@
 #include <movement.h>
 #include <debugmovement.h>
 #include <doublelinetracer.h>
-#include <irobstacledetector.h>
+#include <obstacleavoider.h>
 #include <usobstacledetector.h>
 
 using namespace std;
@@ -60,7 +60,7 @@ int main(int argc, char *argv[])
                           rightDetector,
                           move(movement),
                           make_shared<DoubleLineTracer>(leftTracer, rightTracer),
-                          make_shared<IRObstacleDetector>(leftDetector, rightDetector),
+                          make_shared<ObstacleAvoider>(leftDetector, rightDetector),
                           make_shared<USObstacleDetector>(usSensor));
 
     return a.exec();

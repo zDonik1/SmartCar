@@ -15,7 +15,7 @@ using namespace std;
 DoubleLineTracer::DoubleLineTracer(std::shared_ptr<IIRSensor> leftSensor,
                                    std::shared_ptr<IIRSensor> rightSensor,
                                    QObject *parent)
-    : IIRVectorService(parent), m_leftSensor(leftSensor), m_rightSensor(rightSensor)
+    : IAvoider(parent), m_leftSensor(leftSensor), m_rightSensor(rightSensor)
 {
     connect(m_leftSensor.get(),
             &IIRSensor::isBlockedChanged,
@@ -33,16 +33,40 @@ const Vector &DoubleLineTracer::vector() const
     return m_vector;
 }
 
+bool DoubleLineTracer::isBlocked() const
+{
+    return m_isBlocked;
+}
+
 void DoubleLineTracer::sensorsUpdated()
 {
     if (m_leftSensor->isBlocked() && m_rightSensor->isBlocked()) {
-        m_vector = {0, 0};
+        setVector({0, 0});
+        setIsBlocked(true);
     } else if (m_leftSensor->isBlocked()) {
-        m_vector = {1, 0};
+        setVector({1, 0});
+        setIsBlocked(true);
     } else if (m_rightSensor->isBlocked()) {
-        m_vector = {-1, 0};
+        setVector({-1, 0});
+        setIsBlocked(true);
     } else {
-        m_vector = {0, 1};
+        setVector({0, 1});
+        setIsBlocked(false);
     }
-    emit vectorChanged();
+}
+
+void DoubleLineTracer::setVector(Vector vector)
+{
+    if (m_vector != vector) {
+        m_vector = vector;
+        emit vectorChanged();
+    }
+}
+
+void DoubleLineTracer::setIsBlocked(bool isBlocked)
+{
+    if (m_isBlocked != isBlocked) {
+        m_isBlocked = isBlocked;
+        emit isBlockedChanged();
+    }
 }

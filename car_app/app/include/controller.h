@@ -20,7 +20,7 @@
 #include <iussensor.h>
 #include <iirsensor.h>
 #include <imovement.h>
-#include <iirvectorservice.h>
+#include <iavoider.h>
 #include <iusobstacledetector.h>
 
 
@@ -35,8 +35,8 @@ public:
                std::shared_ptr<IIRSensor> leftDetectorSensor,
                std::shared_ptr<IIRSensor> rightDetectorSensor,
                std::shared_ptr<IMovement> movement,
-               std::shared_ptr<IIRVectorService> tracer,
-               std::shared_ptr<IIRVectorService> sideObstacleDetector,
+               std::shared_ptr<IAvoider> tracer,
+               std::shared_ptr<IAvoider> sideObstacleDetector,
                std::shared_ptr<IUSObstacleDetector> frontObstacleDetector,
                QObject *parent = nullptr);
 
@@ -72,8 +72,8 @@ private:
     std::vector<std::shared_ptr<ISensor>> m_sensors;
 
     std::shared_ptr<IMovement> m_movement;
-    std::shared_ptr<IIRVectorService> m_tracer;
-    std::shared_ptr<IIRVectorService> m_sideObstacleDetector;
+    std::shared_ptr<IAvoider> m_tracer;
+    std::shared_ptr<IAvoider> m_sideObstacleDetector;
     std::shared_ptr<IUSObstacleDetector> m_frontObstacleDetector;
 
     QTimer m_tickTimer;

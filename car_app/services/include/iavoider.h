@@ -12,15 +12,17 @@
 #include <vector.h>
 
 
-class IIRVectorService : public QObject
+class IAvoider : public QObject
 {
     Q_OBJECT
 
 public:
-    explicit IIRVectorService(QObject *parent = nullptr) : QObject(parent) {}
+    explicit IAvoider(QObject *parent = nullptr) : QObject(parent) {}
 
     virtual const Vector &vector() const = 0;
+    virtual bool isBlocked() const = 0;
 
 signals:
-    void vectorChanged();
+    void vectorChanged(QPrivateSignal = {});
+    void isBlockedChanged(QPrivateSignal = {});
 };

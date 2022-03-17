@@ -9,11 +9,11 @@
 
 #include <memory>
 
-#include <iirvectorservice.h>
+#include <iavoider.h>
 #include <iirsensor.h>
 
 
-class DoubleLineTracer : public IIRVectorService
+class DoubleLineTracer : public IAvoider
 {
 public:
     DoubleLineTracer(std::shared_ptr<IIRSensor> leftSensor,
@@ -21,12 +21,18 @@ public:
                      QObject *parent = nullptr);
 
     virtual const Vector &vector() const override;
+    virtual bool isBlocked() const override;
 
 private slots:
     void sensorsUpdated();
 
 private:
+    void setVector(Vector vector);
+    void setIsBlocked(bool isBlocked);
+
+private:
     std::shared_ptr<IIRSensor> m_leftSensor;
     std::shared_ptr<IIRSensor> m_rightSensor;
     Vector m_vector;
+    bool m_isBlocked = false;
 };

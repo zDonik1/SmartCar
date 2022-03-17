@@ -5,48 +5,65 @@
  *
  *************************************************************************/
 
-#include <irobstacledetector.h>
+#include <obstacleavoider.h>
 
 using namespace std;
 
-IRObstacleDetector::IRObstacleDetector(std::shared_ptr<IIRSensor> leftSensor,
+ObstacleAvoider::ObstacleAvoider(std::shared_ptr<IIRSensor> leftSensor,
                                        std::shared_ptr<IIRSensor> rightSensor,
                                        QObject *parent)
-    : IIRVectorService(parent), m_leftSensor(leftSensor), m_rightSensor(rightSensor)
+    : IAvoider(parent), m_leftSensor(leftSensor), m_rightSensor(rightSensor)
 {
     connect(m_leftSensor.get(),
             &IIRSensor::isBlockedChanged,
             this,
-            &IRObstacleDetector::sensorsUpdated);
+            &ObstacleAvoider::sensorsUpdated);
 
     connect(m_rightSensor.get(),
             &IIRSensor::isBlockedChanged,
             this,
-            &IRObstacleDetector::sensorsUpdated);
+            &ObstacleAvoider::sensorsUpdated);
 }
 
-const Vector &IRObstacleDetector::vector() const
+const Vector &ObstacleAvoider::vector() const
 {
     return m_vector;
 }
 
-void IRObstacleDetector::sensorsUpdated()
+bool ObstacleAvoider::isBlocked() const
+{
+    return m_isBlocked;
+}
+
+void ObstacleAvoider::sensorsUpdated()
 {
     if (m_leftSensor->isBlocked() && m_rightSensor->isBlocked()) {
         setVector({0, -1});
+        setIsBlocked(true);
     } else if (m_leftSensor->isBlocked()) {
         setVector({1, 0});
+        setIsBlocked(true);
     } else if (m_rightSensor->isBlocked()) {
         setVector({-1, 0});
+        setIsBlocked(true);
     } else {
         setVector({0, 1});
+        setIsBlocked(false);
     }
 }
 
-void IRObstacleDetector::setVector(Vector vector)
+void ObstacleAvoider::setVector(Vector vector)
 {
     if (m_vector != vector) {
         m_vector = vector;
         emit vectorChanged();
+    }
+}
+
+void ObstacleAvoider::setIsBlocked(bool isBlocked)
+{
+    if (m_isBlocked != isBlocked) {
+        m_isBlocked = isBlocked;
+        emit isBlockedChanged();
     }
 }
