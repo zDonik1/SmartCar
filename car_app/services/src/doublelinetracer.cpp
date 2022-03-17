@@ -15,7 +15,7 @@ using namespace std;
 DoubleLineTracer::DoubleLineTracer(std::shared_ptr<IIRSensor> leftSensor,
                                    std::shared_ptr<IIRSensor> rightSensor,
                                    QObject *parent)
-    : IAvoider(parent), m_leftSensor(leftSensor), m_rightSensor(rightSensor)
+    : Avoider(parent), m_leftSensor(leftSensor), m_rightSensor(rightSensor)
 {
     connect(m_leftSensor.get(),
             &IIRSensor::isBlockedChanged,
@@ -26,16 +26,6 @@ DoubleLineTracer::DoubleLineTracer(std::shared_ptr<IIRSensor> leftSensor,
             &IIRSensor::isBlockedChanged,
             this,
             &DoubleLineTracer::sensorsUpdated);
-}
-
-const Vector &DoubleLineTracer::vector() const
-{
-    return m_vector;
-}
-
-bool DoubleLineTracer::isBlocked() const
-{
-    return m_isBlocked;
 }
 
 void DoubleLineTracer::sensorsUpdated()
@@ -52,21 +42,5 @@ void DoubleLineTracer::sensorsUpdated()
     } else {
         setVector({0, 1});
         setIsBlocked(false);
-    }
-}
-
-void DoubleLineTracer::setVector(Vector vector)
-{
-    if (m_vector != vector) {
-        m_vector = vector;
-        emit vectorChanged();
-    }
-}
-
-void DoubleLineTracer::setIsBlocked(bool isBlocked)
-{
-    if (m_isBlocked != isBlocked) {
-        m_isBlocked = isBlocked;
-        emit isBlockedChanged();
     }
 }

@@ -19,6 +19,7 @@ set(HEADERS
     include/iusobstacledetector.h
     include/usobstacledetector.h
     include/iavoider.h
+    include/avoider.h
     include/doublelinetracer.h
     include/obstacleavoider.h
     include/vector.h
@@ -28,6 +29,7 @@ set(HEADERS
 set(SOURCES
     src/movement.cpp
     src/usobstacledetector.cpp
+    src/avoider.cpp
     src/doublelinetracer.cpp
     src/obstacleavoider.cpp
     src/debugmovement.cpp
