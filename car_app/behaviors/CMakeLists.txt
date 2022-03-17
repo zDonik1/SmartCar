@@ -15,9 +15,11 @@ set(BEHAVIORS_TARGET behaviors)
 
 set(HEADERS
     include/customporttypes.h
+    include/move.h
 )
 
 set(SOURCES
+    src/move.cpp
 )
 
 

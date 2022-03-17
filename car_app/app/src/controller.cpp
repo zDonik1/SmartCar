@@ -171,25 +171,6 @@ void Controller::registerNodes()
 
     // ---- action nodes
 
-    m_factory.registerSimpleAction(
-        "Move",
-        [this](TreeNode &self) {
-            auto vector = self.getInput<Vector>("vector");
-            if (!vector) {
-                qDebug() << "Couldn't find port: vector";
-                return NodeStatus::FAILURE;
-            }
-
-            m_movement->move(vector.value());
-            return NodeStatus::SUCCESS;
-        },
-        vectorPort);
-
-    m_factory.registerSimpleAction("Stop", [this](TreeNode &) {
-        m_movement->stop();
-        return NodeStatus::SUCCESS;
-    });
-
     m_factory.registerSimpleAction("AvoidLine", [this](TreeNode &) {
         m_movement->move(m_tracer->vector());
         return NodeStatus::SUCCESS;
