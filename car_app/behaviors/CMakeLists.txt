@@ -14,6 +14,7 @@ set(BEHAVIORS_TARGET behaviors)
 # ==== SOURCE FILES =========================================
 
 set(HEADERS
+    include/customporttypes.h
 )
 
 set(SOURCES

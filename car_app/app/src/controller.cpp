@@ -18,23 +18,6 @@ constexpr auto SENSOR_UPDATE_INTERVAL = 0; // ms, 0 means manual ticking
 constexpr auto US_OBSTACLE_THRESHOLD = 15; // cm
 constexpr auto OBSTACLE_TO_DODGE = 2;
 
-// registering custom Vector type in BehaviorTree
-namespace BT {
-template<>
-inline Vector convertFromString(StringView str)
-{
-    auto parts = splitString(str, ',');
-    if (parts.size() != 2) {
-        throw RuntimeError("invalid input in behavior tree");
-    } else {
-        Vector vector;
-        vector.x = convertFromString<float>(parts[0]);
-        vector.y = convertFromString<float>(parts[1]);
-        return vector;
-    }
-}
-} // namespace BT
-
 
 Controller::Controller(std::shared_ptr<IUSSensor> usSensor,
                        std::shared_ptr<IIRSensor> leftTracerSensor,
