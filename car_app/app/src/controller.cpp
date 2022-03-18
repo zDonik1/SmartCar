@@ -171,16 +171,6 @@ void Controller::registerNodes()
 
     // ---- action nodes
 
-    m_factory.registerSimpleAction("AvoidLine", [this](TreeNode &) {
-        m_movement->move(m_tracer->vector());
-        return NodeStatus::SUCCESS;
-    });
-
-    m_factory.registerSimpleAction("AvoidSideObstacle", [this](TreeNode &) {
-        m_movement->move(m_sideObstacleDetector->vector());
-        return NodeStatus::SUCCESS;
-    });
-
     m_factory.registerSimpleAction(
         "SetFinishedObstacle",
         [this](TreeNode &self) {
