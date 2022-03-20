@@ -10,8 +10,8 @@
 using namespace std;
 
 ObstacleAvoider::ObstacleAvoider(std::shared_ptr<IIRSensor> leftSensor,
-                                       std::shared_ptr<IIRSensor> rightSensor,
-                                       QObject *parent)
+                                 std::shared_ptr<IIRSensor> rightSensor,
+                                 QObject *parent)
     : Avoider(parent), m_leftSensor(leftSensor), m_rightSensor(rightSensor)
 {
     connect(m_leftSensor.get(),

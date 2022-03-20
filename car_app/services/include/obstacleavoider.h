@@ -17,8 +17,8 @@ class ObstacleAvoider : public Avoider
 {
 public:
     ObstacleAvoider(std::shared_ptr<IIRSensor> leftSensor,
-                         std::shared_ptr<IIRSensor> rightSensor,
-                         QObject *parent = nullptr);
+                    std::shared_ptr<IIRSensor> rightSensor,
+                    QObject *parent = nullptr);
 
 private slots:
     void sensorsUpdated();

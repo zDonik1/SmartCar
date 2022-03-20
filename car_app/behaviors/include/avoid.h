@@ -12,7 +12,7 @@
 #include <imovement.h>
 #include <iavoider.h>
 
-class Avoid : BT::StatefulActionNode
+class Avoid : public BT::StatefulActionNode
 {
 public:
     Avoid(std::shared_ptr<IMovement> movement,
