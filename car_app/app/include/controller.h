@@ -48,17 +48,23 @@ public:
     virtual void start() override;
     virtual void stop() override;
 
+    template<typename InputType>
+    void addTreeConstant(const std::string &key, const InputType &constant)
+    {
+        m_blackboard->set(key, constant);
+    }
+
 private slots:
     void tickTree();
 
 private:
-    BT::Blackboard::Ptr createAndInitBlackboard();
     void registerNodes();
     void startSensors();
     void stopSensors();
     void requestSensorsUpdate();
 
 private:
+    BT::Blackboard::Ptr m_blackboard;
     BT::BehaviorTreeFactory m_factory;
     BT::Tree m_tree;
     std::unique_ptr<BT::StdCoutLogger> m_logger;

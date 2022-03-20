@@ -18,11 +18,8 @@ using namespace std;
 using namespace BT;
 
 constexpr auto DEBUG = false;
-constexpr auto TICK_INTERVAL = DEBUG ? 250 : 20; // ms
+constexpr auto TICK_INTERVAL = DEBUG ? 500 : 1; // ms
 constexpr auto SENSOR_UPDATE_INTERVAL = 0; // ms, 0 means manual ticking
-constexpr auto US_OBSTACLE_THRESHOLD = 15; // cm
-constexpr auto OBSTACLE_TO_DODGE = 2;
-
 
 Controller::Controller(std::shared_ptr<IUSSensor> usSensor,
                        std::shared_ptr<IIRSensor> leftTracerSensor,
@@ -34,10 +31,10 @@ Controller::Controller(std::shared_ptr<IUSSensor> usSensor,
                        std::shared_ptr<IAvoider> sideObstacleDetector,
                        std::shared_ptr<IUSObstacleDetector> frontObstacleDetector,
                        QObject *parent)
-    : QObject(parent), m_usSensor(usSensor), m_leftTracerSensor(leftTracerSensor),
-      m_rightTracerSensor(rightTracerSensor), m_leftDetectorSensor(leftDetectorSensor),
-      m_rightDetectorSensor(rightDetectorSensor), m_movement(movement),
-      m_tracer(tracer), m_sideObstacleDetector(sideObstacleDetector),
+    : QObject(parent), m_blackboard(Blackboard::create()), m_usSensor(usSensor),
+      m_leftTracerSensor(leftTracerSensor), m_rightTracerSensor(rightTracerSensor),
+      m_leftDetectorSensor(leftDetectorSensor), m_rightDetectorSensor(rightDetectorSensor),
+      m_movement(movement), m_tracer(tracer), m_sideObstacleDetector(sideObstacleDetector),
       m_frontObstacleDetector(frontObstacleDetector)
 {
     registerNodes();
@@ -59,7 +56,7 @@ Controller::~Controller()
 bool Controller::makeTreeFromFile(const std::string &filename)
 {
     try {
-        m_tree = m_factory.createTreeFromFile(filename, createAndInitBlackboard());
+        m_tree = m_factory.createTreeFromFile(filename, m_blackboard);
     } catch (const std::runtime_error &e) {
         qDebug() << e.what();
         return false;
@@ -70,7 +67,7 @@ bool Controller::makeTreeFromFile(const std::string &filename)
 bool Controller::makeTreeFromText(const std::string &text)
 {
     try {
-        m_tree = m_factory.createTreeFromText(text, createAndInitBlackboard());
+        m_tree = m_factory.createTreeFromText(text, m_blackboard);
     } catch (const std::runtime_error &e) {
         qDebug() << e.what();
         return false;
@@ -103,12 +100,6 @@ void Controller::tickTree()
 
     requestSensorsUpdate();
     m_tree.tickRoot();
-}
-
-Blackboard::Ptr Controller::createAndInitBlackboard()
-{
-    auto blackboard = Blackboard::create();
-    return blackboard;
 }
 
 void Controller::registerNodes()
