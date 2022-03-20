@@ -9,6 +9,11 @@
 
 #include <QDebug>
 
+#include <move.h>
+#include <avoid.h>
+#include <noobstacleinfront.h>
+#include <avoidernotblocked.h>
+
 using namespace std;
 using namespace BT;
 
@@ -108,27 +113,42 @@ Blackboard::Ptr Controller::createAndInitBlackboard()
 
 void Controller::registerNodes()
 {
+    // ---- action nodes
+
+    auto moveBuilder = [this](const string &name, const NodeConfiguration &config) {
+        return make_unique<Move>(m_movement, name, config);
+    };
+
+    auto avoidObstacleBuilder = [this](const string &name, const NodeConfiguration &config) {
+        return make_unique<Avoid>(m_movement, m_sideObstacleDetector, name, config);
+    };
+
+    auto avoidLineBuilder = [this](const string &name, const NodeConfiguration &config) {
+        return make_unique<Avoid>(m_movement, m_tracer, name, config);
+    };
+
+    m_factory.registerBuilder<Move>("Move", moveBuilder);
+    m_factory.registerBuilder<Avoid>("AvoidObstacle", avoidObstacleBuilder);
+    m_factory.registerBuilder<Avoid>("AvoidLine", avoidLineBuilder);
+
+
     // ---- condition nodes
 
-    m_factory.registerSimpleCondition("IsObstacleInFront", [this](TreeNode &) {
-        if (m_usSensor->distance() < 0)
-            return NodeStatus::FAILURE;
+    auto noObstacleInFrontBuilder = [this](const string &name, const NodeConfiguration &config) {
+        return make_unique<NoObstacleInFront>(m_usSensor, name, config);
+    };
 
-        return m_usSensor->distance() < US_OBSTACLE_THRESHOLD ? NodeStatus::SUCCESS
-                                                              : NodeStatus::FAILURE;
-    });
+    auto sidesNotBlockedBuilder = [this](const string &name, const NodeConfiguration &config) {
+        return make_unique<AvoiderNotBlocked>(m_sideObstacleDetector, name, config);
+    };
 
-    m_factory.registerSimpleCondition("IsObstacleOnSide", [this](TreeNode &) {
-        return m_leftDetectorSensor->isBlocked() || m_rightDetectorSensor->isBlocked()
-                   ? NodeStatus::SUCCESS
-                   : NodeStatus::FAILURE;
-    });
+    auto tracersNotBlockedBuilder = [this](const string &name, const NodeConfiguration &config) {
+        return make_unique<AvoiderNotBlocked>(m_tracer, name, config);
+    };
 
-    m_factory.registerSimpleCondition("IsOnLine", [this](TreeNode &) {
-        return m_leftTracerSensor->isBlocked() || m_rightTracerSensor->isBlocked()
-                   ? NodeStatus::SUCCESS
-                   : NodeStatus::FAILURE;
-    });
+    m_factory.registerBuilder<NoObstacleInFront>("NoObstacleInFront", noObstacleInFrontBuilder);
+    m_factory.registerBuilder<AvoiderNotBlocked>("SidesNotBlocked", sidesNotBlockedBuilder);
+    m_factory.registerBuilder<AvoiderNotBlocked>("TracersNotBlocked", tracersNotBlockedBuilder);
 }
 
 void Controller::startSensors()
