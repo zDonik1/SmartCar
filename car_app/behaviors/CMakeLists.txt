@@ -17,11 +17,13 @@ set(HEADERS
     include/customporttypes.h
     include/move.h
     include/avoid.h
+    include/noobstacleinfront.h
 )
 
 set(SOURCES
     src/move.cpp
     src/avoid.cpp
+    src/noobstacleinfront.cpp
 )
 
 
