@@ -18,12 +18,14 @@ set(HEADERS
     include/move.h
     include/avoid.h
     include/noobstacleinfront.h
+    include/avoidernotblocked.h
 )
 
 set(SOURCES
     src/move.cpp
     src/avoid.cpp
     src/noobstacleinfront.cpp
+    src/avoidernotblocked.cpp
 )
 
 
