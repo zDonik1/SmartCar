@@ -11,8 +11,6 @@
 
 #include <wiringPi.h>
 
-constexpr auto TIMER_INTERVAL = 20; // ms
-
 
 IRSensor::IRSensor(int pinN, QObject *parent)
     : IIRSensor(parent)
@@ -26,24 +24,47 @@ IRSensor::IRSensor(int pinN, QObject *parent)
 
     pinMode(m_pinN, INPUT);
 
-    m_timer.setInterval(TIMER_INTERVAL);
-
-    connect(&m_timer, &QTimer::timeout, this, [this]{ setIsBlocked(digitalRead(m_pinN) == LOW); });
+    connect(&m_timer, &QTimer::timeout, this, &IRSensor::updateIsBlocked);
 }
 
-void IRSensor::start()
+void IRSensor::start(int updateInterval)
 {
-    m_timer.start();
+    if (m_isRunning)
+        return;
+
+    if (updateInterval != 0) {
+        m_timer.start(updateInterval);
+    } else {
+        m_manualRequestMode = true;
+    }
+    m_isRunning = true;
 }
 
 void IRSensor::stop()
 {
+    if (!m_isRunning)
+        return;
+
+    m_isBlocked = false;
+    m_isRunning = false;
+    m_manualRequestMode = false;
+
     m_timer.stop();
 }
 
-bool IRSensor::isBlocked()
+void IRSensor::requestReading()
+{
+    updateIsBlocked();
+}
+
+bool IRSensor::isBlocked() const
 {
     return m_isBlocked;
+}
+
+void IRSensor::updateIsBlocked()
+{
+    setIsBlocked(readIsBlocked());
 }
 
 void IRSensor::setIsBlocked(bool isBlocked)
@@ -52,4 +73,9 @@ void IRSensor::setIsBlocked(bool isBlocked)
         m_isBlocked = isBlocked;
         emit isBlockedChanged();
     }
+}
+
+bool IRSensor::readIsBlocked() const
+{
+    return digitalRead(m_pinN) == LOW;
 }

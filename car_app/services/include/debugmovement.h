@@ -1,14 +1,17 @@
 /**************************************************************************
  *
  *   @author Doniyorbek Tokhirov <tokhirovdoniyor@gmail.com>
- *   @date 25/02/2022
+ *   @date 14/03/2022
  *
  *************************************************************************/
 
 #pragma once
 
-class IMotorActuator
+#include <imovement.h>
+
+class DebugMovement : public IMovement
 {
 public:
-    virtual void setValue(float value) = 0;
+    virtual void move(Vector vector) override;
+    virtual void stop() override;
 };

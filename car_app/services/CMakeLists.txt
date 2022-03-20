@@ -18,19 +18,30 @@ set(HEADERS
     include/movement.h
     include/iusobstacledetector.h
     include/usobstacledetector.h
-    include/ilinetracer.h
+    include/iavoider.h
+    include/avoider.h
     include/doublelinetracer.h
-    include/iirobstacledetector.h
-    include/irobstacledetector.h
+    include/obstacleavoider.h
     include/vector.h
+    include/debugmovement.h
 )
 
 set(SOURCES
     src/movement.cpp
     src/usobstacledetector.cpp
+    src/avoider.cpp
     src/doublelinetracer.cpp
-    src/irobstacledetector.cpp
+    src/obstacleavoider.cpp
+    src/debugmovement.cpp
 )
+
+
+# ==== FINDING PACKAGES =========================================
+
+find_package(QT NAMES Qt6 Qt5 COMPONENTS Core REQUIRED)
+find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Core REQUIRED)
+
+
 # ==== MAKING TARGET =========================================
 
 add_library(${SERVICES_TARGET} ${HEADERS} ${SOURCES})

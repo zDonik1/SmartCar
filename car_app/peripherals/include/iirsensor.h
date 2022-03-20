@@ -9,17 +9,17 @@
 
 #include <QObject>
 
+#include <isensor.h>
 
-class IIRSensor : public QObject
+
+class IIRSensor : public QObject, public ISensor
 {
     Q_OBJECT
 
 public:
     explicit IIRSensor(QObject *parent = nullptr) : QObject(parent) {}
 
-    virtual void start() = 0;
-    virtual void stop() = 0;
-    virtual bool isBlocked() = 0;
+    virtual bool isBlocked() const = 0;
 
 signals:
     void isBlockedChanged();

@@ -1,28 +1,22 @@
 /**************************************************************************
  *
  *   @author Doniyorbek Tokhirov <tokhirovdoniyor@gmail.com>
- *   @date 05/03/2022
+ *   @date 08/03/2022
  *
  *************************************************************************/
 
 #pragma once
 
-#include <QObject>
-
-#include <vector.h>
+#include <string>
 
 
-class ILineTracer : public QObject
+class IController
 {
-    Q_OBJECT
-
 public:
-    explicit ILineTracer(QObject *parent = nullptr) : QObject(parent) {}
+    virtual bool makeTreeFromFile(const std::string &filename) = 0;
+    virtual bool makeTreeFromText(const std::string &text) = 0;
 
+    /** starts ticking the behavior tree */
     virtual void start() = 0;
     virtual void stop() = 0;
-    virtual const Vector &vector() const = 0;
-
-signals:
-    void vectorChanged();
 };

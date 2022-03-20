@@ -8,27 +8,47 @@
 
 # ==== CONFIGURATION =========================================
 
-set(SMART_CAR_TARGET SmartCarApp)
+set(CAR_APP_TARGET SmartCarApp)
+
+
+# ==== SOURCE FILES =========================================
+
+set(HEADERS
+    include/icontroller.h
+    include/controller.h
+    include/timeline.h
+)
+
+set(SOURCES
+    src/main.cpp
+    src/controller.cpp
+    src/timeline.cpp
+)
+
+
+# ==== FINDING PACKAGES =========================================
+
+find_package(QT NAMES Qt6 Qt5 COMPONENTS Core REQUIRED)
+find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Core REQUIRED)
 
 
 # ==== MAKING TARGET =========================================
 
-add_executable(${SMART_CAR_TARGET}
-    main.cpp
-    ${PERIHEADERS}
+add_executable(${CAR_APP_TARGET} ${HEADERS} ${SOURCES})
+
+target_link_libraries(${CAR_APP_TARGET}
+    behaviors
 )
 
-target_link_libraries(${SMART_CAR_TARGET}
-    Qt${QT_VERSION_MAJOR}::Core
-    BT::behaviortree_cpp_v3
-    peripherals
-    services
+target_include_directories(${CAR_APP_TARGET}
+    PUBLIC
+        include
 )
 
 
 # ==== INSTALLATION =========================================
 
 if (${CMAKE_CROSSCOMPILING})
-    install(TARGETS ${SMART_CAR_TARGET}
+    install(TARGETS ${CAR_APP_TARGET}
         RUNTIME DESTINATION "/tmp/")
 endif()

@@ -1,7 +1,7 @@
 /**************************************************************************
  *
  *   @author Doniyorbek Tokhirov <tokhirovdoniyor@gmail.com>
- *   @date 05/03/2022
+ *   @date 08/03/2022
  *
  *************************************************************************/
 
@@ -13,12 +13,12 @@
 #include <iirsensor.h>
 
 
-class DoubleLineTracer : public Avoider
+class ObstacleAvoider : public Avoider
 {
 public:
-    DoubleLineTracer(std::shared_ptr<IIRSensor> leftSensor,
-                     std::shared_ptr<IIRSensor> rightSensor,
-                     QObject *parent = nullptr);
+    ObstacleAvoider(std::shared_ptr<IIRSensor> leftSensor,
+                    std::shared_ptr<IIRSensor> rightSensor,
+                    QObject *parent = nullptr);
 
 private slots:
     void sensorsUpdated();

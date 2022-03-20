@@ -15,8 +15,7 @@ public:
     MotorActuator(int forwardPinN, int backwardPinN);
     virtual ~MotorActuator();
 
-    virtual void setDirection(Direction direction) override;
-    virtual void setSpeed(float speed) override;
+    virtual void setValue(float value) override;
 
 private:
     void updateMotors();
@@ -27,6 +26,4 @@ private:
 
     int m_forwardPinN = -1;
     int m_backwardPinN = -1;
-    Direction m_direction = Direction::Still;
-    float m_speed = MIN_SPEED;
 };

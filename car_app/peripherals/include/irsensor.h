@@ -19,15 +19,23 @@ class IRSensor : public IIRSensor
 public:
     explicit IRSensor(int pinN, QObject *parent = nullptr);
 
-    virtual void start() override;
+    virtual void start(int updateInterval) override;
     virtual void stop() override;
-    virtual bool isBlocked() override;
+
+    virtual void requestReading() override;
+    virtual bool isBlocked() const override;
+
+private slots:
+    void updateIsBlocked();
 
 private:
     void setIsBlocked(bool isBlocked);
+    bool readIsBlocked() const;
 
 private:
     int m_pinN = -1;
     QTimer m_timer;
     bool m_isBlocked = false;
+    bool m_isRunning = false;
+    bool m_manualRequestMode = false;
 };

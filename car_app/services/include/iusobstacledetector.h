@@ -17,8 +17,6 @@ class IUSObstacleDetector : public QObject
 public:
     explicit IUSObstacleDetector(QObject *parent = nullptr) : QObject(parent) {}
 
-    virtual void start() = 0;
-    virtual void stop() = 0;
     virtual void addThreshold(float threshold) = 0;
     virtual void removeThreshold(int index) = 0;
     virtual const std::vector<float> &thresholds() const = 0;

@@ -7,15 +7,11 @@
 
 #include <usobstacledetector.h>
 
-#include <exception>
-
 using namespace std;
 
-constexpr auto THRESHOLD_CROSS_THROTTLE = 100; // ms
 
-
-USObstacleDetector::USObstacleDetector(std::unique_ptr<IUSSensor> usSensor, QObject *parent)
-    : IUSObstacleDetector(parent), m_sensor(move(usSensor))
+USObstacleDetector::USObstacleDetector(std::shared_ptr<IUSSensor> usSensor, QObject *parent)
+    : IUSObstacleDetector(parent), m_sensor(usSensor)
 {
     connect(m_sensor.get(),
             &IUSSensor::distanceChanged,
@@ -23,20 +19,7 @@ USObstacleDetector::USObstacleDetector(std::unique_ptr<IUSSensor> usSensor, QObj
             &USObstacleDetector::checkDistWithThresholds);
 }
 
-USObstacleDetector::~USObstacleDetector()
-{
-    m_sensor->stop();
-}
-
-void USObstacleDetector::start()
-{
-    m_sensor->start();
-}
-
-void USObstacleDetector::stop()
-{
-    m_sensor->pause();
-}
+USObstacleDetector::~USObstacleDetector() {}
 
 void USObstacleDetector::addThreshold(float threshold)
 {

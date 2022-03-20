@@ -25,37 +25,32 @@ float travelTime(float elapsedTime)
 }
 
 
-USWorker::USWorker(int trigPinN, int echoPinN, int timeout, QObject *parent)
-    : QObject{parent}, m_trigPinN(trigPinN), m_echoPinN(echoPinN), m_timeout(timeout)
+USWorker::USWorker(int trigPinN, int echoPinN, QObject *parent)
+    : QObject{parent}, m_trigPinN(trigPinN), m_echoPinN(echoPinN)
 {
-    connect(this, &USWorker::operate, this, &USWorker::requestDistance, Qt::QueuedConnection);
+    connect(this, &USWorker::startAsync, this, &USWorker::findDistanceContinuous, Qt::QueuedConnection);
+    connect(this, &USWorker::requestDistanceSignal, this, &USWorker::findDistanceOnce, Qt::QueuedConnection);
 }
 
-void USWorker::start()
+void USWorker::start(int updateInterval)
 {
-    m_isRunning = true;
-    emit operate();
+    m_isRunning.store(true);
+    m_updateInterval = updateInterval;
+    emit startAsync();
 }
 
 void USWorker::stop()
 {
-    m_isRunning = false;
+    m_isRunning.store(false);
 }
 
 void USWorker::requestDistance()
 {
-    // help functions
+    emit requestDistanceSignal();
+}
 
-    static const auto requestDistance = [this] {
-        QTimer::singleShot(m_timeout, this, &USWorker::requestDistance);
-    };
-
-
-    // business logic
-
-    if (!m_isRunning)
-        return;
-
+std::pair<float, bool> USWorker::calculateDistance()
+{
     digitalWrite(m_trigPinN, LOW);
     QThread::msleep(TRIGGER_PREP_TIME);
     digitalWrite(m_trigPinN, HIGH);
@@ -66,20 +61,32 @@ void USWorker::requestDistance()
     while (digitalRead(m_echoPinN) == LOW && m_elapsedTimer.elapsed() < US_SENSOR_TIMEOUT)
         ;
 
-    if (m_elapsedTimer.elapsed() >= US_SENSOR_TIMEOUT) {
-        requestDistance();
-        return;
-    }
+    if (m_elapsedTimer.elapsed() >= US_SENSOR_TIMEOUT)
+        return {-1, false};
 
     m_elapsedTimer.start();
     while (digitalRead(m_echoPinN) == HIGH && m_elapsedTimer.elapsed() < US_SENSOR_TIMEOUT)
         ;
 
-    if (m_elapsedTimer.elapsed() >= US_SENSOR_TIMEOUT) {
-        requestDistance();
-        return;
-    }
+    if (m_elapsedTimer.elapsed() >= US_SENSOR_TIMEOUT)
+        return {-1, false};
 
-    emit distanceReady(travelTime(m_elapsedTimer.nsecsElapsed()) * SPEED_OF_SOUND);
-    requestDistance();
+    return {travelTime(m_elapsedTimer.nsecsElapsed()) * SPEED_OF_SOUND, true};
+}
+
+void USWorker::findDistanceOnce()
+{
+    auto [distance, success] = calculateDistance();
+    if (success) {
+        emit distanceReady(distance);
+    }
+}
+
+void USWorker::findDistanceContinuous()
+{
+    if (!m_isRunning)
+        return;
+
+    findDistanceOnce();
+    QTimer::singleShot(m_updateInterval, this, &USWorker::findDistanceContinuous);
 }
