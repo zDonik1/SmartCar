@@ -21,6 +21,9 @@
 
 using namespace std;
 
+constexpr auto DEBUG = true;
+constexpr auto TREE_TICK_INTERVAL = DEBUG ? 1000 : 1; // ms
+
 constexpr auto MOTOR_LEFT_FORWARD_PIN = 1;
 constexpr auto MOTOR_LEFT_BACKWARD_PIN = 4;
 constexpr auto MOTOR_RIGHT_FORWARD_PIN = 5;
@@ -78,7 +81,9 @@ int main(int argc, char *argv[])
                           move(movement),
                           make_shared<DoubleLineTracer>(leftTracer, rightTracer),
                           make_shared<ObstacleAvoider>(leftDetector, rightDetector),
-                          make_shared<USObstacleDetector>(usSensor));
+                          make_shared<USObstacleDetector>(usSensor),
+                          TREE_TICK_INTERVAL,
+                          DEBUG);
 
     controller.makeTreeFromText(XML_TREE);
     controller.start();

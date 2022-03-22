@@ -40,6 +40,8 @@ public:
                std::shared_ptr<IAvoider> tracer,
                std::shared_ptr<IAvoider> sideObstacleDetector,
                std::shared_ptr<IUSObstacleDetector> frontObstacleDetector,
+               int tickInterval,
+               bool isDebug = false,
                QObject *parent = nullptr);
 
     virtual ~Controller() override;
@@ -76,7 +78,6 @@ private:
     std::shared_ptr<IIRSensor> m_rightTracerSensor;
     std::shared_ptr<IIRSensor> m_leftDetectorSensor;
     std::shared_ptr<IIRSensor> m_rightDetectorSensor;
-
     std::vector<std::shared_ptr<ISensor>> m_sensors;
 
     std::shared_ptr<IMovement> m_movement;
@@ -84,9 +85,7 @@ private:
     std::shared_ptr<IAvoider> m_sideObstacleDetector;
     std::shared_ptr<IUSObstacleDetector> m_frontObstacleDetector;
 
-    DoOnceManager m_doOnceManager;
-
     QTimer m_tickTimer;
-    int m_obstacleCount = 0;
-    bool m_hasFinishedObstacleTwo = false;
+    DoOnceManager m_doOnceManager;
+    int m_tickInterval = 1; // msS
 };

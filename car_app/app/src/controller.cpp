@@ -31,12 +31,14 @@ Controller::Controller(std::shared_ptr<IUSSensor> usSensor,
                        std::shared_ptr<IAvoider> tracer,
                        std::shared_ptr<IAvoider> sideObstacleDetector,
                        std::shared_ptr<IUSObstacleDetector> frontObstacleDetector,
+                       int tickInterval,
+                       bool isDebug,
                        QObject *parent)
     : QObject(parent), m_blackboard(Blackboard::create()), m_usSensor(usSensor),
       m_leftTracerSensor(leftTracerSensor), m_rightTracerSensor(rightTracerSensor),
       m_leftDetectorSensor(leftDetectorSensor), m_rightDetectorSensor(rightDetectorSensor),
       m_movement(movement), m_tracer(tracer), m_sideObstacleDetector(sideObstacleDetector),
-      m_frontObstacleDetector(frontObstacleDetector)
+      m_frontObstacleDetector(frontObstacleDetector), m_tickInterval(tickInterval)
 {
     registerNodes();
 
@@ -47,6 +49,10 @@ Controller::Controller(std::shared_ptr<IUSSensor> usSensor,
     m_sensors.push_back(m_rightTracerSensor);
     m_sensors.push_back(m_leftDetectorSensor);
     m_sensors.push_back(m_rightDetectorSensor);
+
+    if (isDebug) {
+        m_logger = make_unique<StdCoutLogger>(m_tree);
+    }
 }
 
 Controller::~Controller()
@@ -78,11 +84,7 @@ bool Controller::makeTreeFromText(const std::string &text)
 
 void Controller::start()
 {
-    if (DEBUG) {
-        m_logger = make_unique<StdCoutLogger>(m_tree);
-    }
-
-    m_tickTimer.start(TICK_INTERVAL);
+    m_tickTimer.start(m_tickInterval);
     startSensors();
     requestSensorsUpdate();
 }
@@ -95,10 +97,6 @@ void Controller::stop()
 
 void Controller::tickTree()
 {
-    if (DEBUG) {
-        qDebug() << "Ticking tree";
-    }
-
     requestSensorsUpdate();
     m_tree.tickRoot();
 }
