@@ -71,7 +71,7 @@ int main(int argc, char *argv[])
                           TREE_TICK_INTERVAL,
                           DEBUG);
 
-    controller.makeTreeFromFile(string{"behaviors/"} + XML_TREE_FILE);
+    controller.makeTreeFromFile(string{BEHAVIORS_PATH} + XML_TREE_FILE);
     controller.start();
 
     return a.exec();

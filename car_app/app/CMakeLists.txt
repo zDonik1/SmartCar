@@ -10,6 +10,12 @@
 
 set(CAR_APP_TARGET SmartCarApp)
 
+if (${CMAKE_CROSSCOMPILING})
+    set(BEHAVIORS_PATH "/tmp/behaviors/")
+else()
+    set(BEHAVIORS_PATH "${CMAKE_CURRENT_BINARY_DIR}/behaviors/")
+endif()
+
 
 # ==== SOURCE FILES =========================================
 
@@ -38,6 +44,8 @@ find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Core REQUIRED)
 
 add_executable(${CAR_APP_TARGET} ${HEADERS} ${SOURCES} ${BEHAVIORS})
 
+add_compile_definitions(BEHAVIORS_PATH="${BEHAVIORS_PATH}")
+
 target_link_libraries(${CAR_APP_TARGET}
     behaviors
 )
@@ -47,12 +55,9 @@ target_include_directories(${CAR_APP_TARGET}
         include
 )
 
-
 # ==== INSTALLATION =========================================
 
 if (${CMAKE_CROSSCOMPILING})
     install(TARGETS ${CAR_APP_TARGET} RUNTIME DESTINATION "/tmp/")
-    install(DIRECTORY behaviors DESTINATION "/tmp/")
-else()
-    install(DIRECTORY behaviors DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 endif()
+install(DIRECTORY behaviors/ DESTINATION ${BEHAVIORS_PATH})
