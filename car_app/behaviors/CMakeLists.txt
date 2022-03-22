@@ -19,6 +19,8 @@ set(HEADERS
     include/avoid.h
     include/noobstacleinfront.h
     include/avoidernotblocked.h
+    include/dooncemanager.h
+    include/doonce.h
 )
 
 set(SOURCES
@@ -26,6 +28,8 @@ set(SOURCES
     src/avoid.cpp
     src/noobstacleinfront.cpp
     src/avoidernotblocked.cpp
+    src/dooncemanager.cpp
+    src/doonce.cpp
 )
 
 

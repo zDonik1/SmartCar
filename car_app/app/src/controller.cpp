@@ -13,12 +13,13 @@
 #include <avoid.h>
 #include <noobstacleinfront.h>
 #include <avoidernotblocked.h>
+#include <doonce.h>
 
 using namespace std;
 using namespace BT;
 
-constexpr auto DEBUG = false;
-constexpr auto TICK_INTERVAL = DEBUG ? 500 : 1; // ms
+constexpr auto DEBUG = true;
+constexpr auto TICK_INTERVAL = DEBUG ? 1000 : 1; // ms
 constexpr auto SENSOR_UPDATE_INTERVAL = 0; // ms, 0 means manual ticking
 
 Controller::Controller(std::shared_ptr<IUSSensor> usSensor,
@@ -110,6 +111,10 @@ void Controller::registerNodes()
         return make_unique<Move>(m_movement, name, config);
     };
 
+    auto stopBuilder = [this](const string &name, const NodeConfiguration &config) {
+        return make_unique<Stop>(m_movement, name);
+    };
+
     auto avoidObstacleBuilder = [this](const string &name, const NodeConfiguration &config) {
         return make_unique<Avoid>(m_movement, m_sideObstacleDetector, name, config);
     };
@@ -119,6 +124,7 @@ void Controller::registerNodes()
     };
 
     m_factory.registerBuilder<Move>("Move", moveBuilder);
+    m_factory.registerBuilder<Stop>("Stop", stopBuilder);
     m_factory.registerBuilder<Avoid>("AvoidObstacle", avoidObstacleBuilder);
     m_factory.registerBuilder<Avoid>("AvoidLine", avoidLineBuilder);
 
@@ -140,6 +146,20 @@ void Controller::registerNodes()
     m_factory.registerBuilder<NoObstacleInFront>("NoObstacleInFront", noObstacleInFrontBuilder);
     m_factory.registerBuilder<AvoiderNotBlocked>("SidesNotBlocked", sidesNotBlockedBuilder);
     m_factory.registerBuilder<AvoiderNotBlocked>("TracersNotBlocked", tracersNotBlockedBuilder);
+
+
+    // ---- decorator nodes
+
+    auto doOnceBuilder = [this](const string &name, const NodeConfiguration &config) {
+        return make_unique<DoOnce>(m_doOnceManager, name, config);
+    };
+
+    auto resetDoOnceBuilder = [this](const string &name, const NodeConfiguration &config) {
+        return make_unique<ResetDoOnce>(m_doOnceManager, name, config);
+    };
+
+    m_factory.registerBuilder<DoOnce>("DoOnce", doOnceBuilder);
+    m_factory.registerBuilder<ResetDoOnce>("ResetDoOnce", resetDoOnceBuilder);
 }
 
 void Controller::startSensors()

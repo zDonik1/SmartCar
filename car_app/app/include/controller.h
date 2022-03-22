@@ -23,6 +23,8 @@
 #include <iavoider.h>
 #include <iusobstacledetector.h>
 
+#include <dooncemanager.h>
+
 
 class Controller : public QObject, public IController
 {
@@ -81,6 +83,8 @@ private:
     std::shared_ptr<IAvoider> m_tracer;
     std::shared_ptr<IAvoider> m_sideObstacleDetector;
     std::shared_ptr<IUSObstacleDetector> m_frontObstacleDetector;
+
+    DoOnceManager m_doOnceManager;
 
     QTimer m_tickTimer;
     int m_obstacleCount = 0;

@@ -35,6 +35,23 @@ constexpr auto IR_OBSTACLE_RIGHT_PIN = 26;
 constexpr auto IR_TRACER_LEFT_PIN = 11;
 constexpr auto IR_TRACER_RIGHT_PIN = 10;
 
+constexpr auto XML_TREE = R"(
+<root main_tree_to_execute = "MainTree" >
+     <BehaviorTree ID="MainTree">
+        <Sequence name="main_behavior">
+            <Repeat num_cycles="3">
+            <ForceSuccess>
+            <DoOnce id="my_first_do_once">
+                <Stop/>
+            </DoOnce>
+            </ForceSuccess>
+            </Repeat>
+            <ResetDoOnce id="my_first_do_once"/>
+        </Sequence>
+     </BehaviorTree>
+</root>
+)";
+
 int main(int argc, char *argv[])
 {
     QCoreApplication a(argc, argv);
@@ -62,6 +79,9 @@ int main(int argc, char *argv[])
                           make_shared<DoubleLineTracer>(leftTracer, rightTracer),
                           make_shared<ObstacleAvoider>(leftDetector, rightDetector),
                           make_shared<USObstacleDetector>(usSensor));
+
+    controller.makeTreeFromText(XML_TREE);
+    controller.start();
 
     return a.exec();
 }
