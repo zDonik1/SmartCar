@@ -1,0 +1,14 @@
+<root main_tree_to_execute = "MainTree" >
+     <BehaviorTree ID="MainTree">
+        <Sequence name="main_behavior">
+            <Repeat num_cycles="3">
+                <ForceSuccess>
+                    <DoOnce id="my_first_do_once">
+                          <Stop/>
+                    </DoOnce>
+                </ForceSuccess>
+            </Repeat>
+            <ResetDoOnce id="my_first_do_once"/>
+        </Sequence>
+     </BehaviorTree>
+</root>

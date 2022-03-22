@@ -38,22 +38,8 @@ constexpr auto IR_OBSTACLE_RIGHT_PIN = 26;
 constexpr auto IR_TRACER_LEFT_PIN = 11;
 constexpr auto IR_TRACER_RIGHT_PIN = 10;
 
-constexpr auto XML_TREE = R"(
-<root main_tree_to_execute = "MainTree" >
-     <BehaviorTree ID="MainTree">
-        <Sequence name="main_behavior">
-            <Repeat num_cycles="3">
-            <ForceSuccess>
-            <DoOnce id="my_first_do_once">
-                <Stop/>
-            </DoOnce>
-            </ForceSuccess>
-            </Repeat>
-            <ResetDoOnce id="my_first_do_once"/>
-        </Sequence>
-     </BehaviorTree>
-</root>
-)";
+constexpr auto XML_TREE_FILE = "test.xml";
+
 
 int main(int argc, char *argv[])
 {
@@ -85,7 +71,7 @@ int main(int argc, char *argv[])
                           TREE_TICK_INTERVAL,
                           DEBUG);
 
-    controller.makeTreeFromText(XML_TREE);
+    controller.makeTreeFromFile(string{"behaviors/"} + XML_TREE_FILE);
     controller.start();
 
     return a.exec();
