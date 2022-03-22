@@ -87,5 +87,6 @@ private:
 
     QTimer m_tickTimer;
     DoOnceManager m_doOnceManager;
-    int m_tickInterval = 1; // msS
+    int m_tickInterval = 1; // ms
+    bool m_isDebug = false;
 };

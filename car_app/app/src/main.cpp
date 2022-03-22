@@ -38,7 +38,7 @@ constexpr auto IR_OBSTACLE_RIGHT_PIN = 26;
 constexpr auto IR_TRACER_LEFT_PIN = 11;
 constexpr auto IR_TRACER_RIGHT_PIN = 10;
 
-constexpr auto XML_TREE_FILE = "test.xml";
+constexpr auto XML_TREE_FILE = "test_do_once.xml";
 
 
 int main(int argc, char *argv[])
