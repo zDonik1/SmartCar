@@ -21,6 +21,9 @@
 
 using namespace std;
 
+constexpr auto DEBUG = true;
+constexpr auto TREE_TICK_INTERVAL = DEBUG ? 1000 : 1; // ms
+
 constexpr auto MOTOR_LEFT_FORWARD_PIN = 1;
 constexpr auto MOTOR_LEFT_BACKWARD_PIN = 4;
 constexpr auto MOTOR_RIGHT_FORWARD_PIN = 5;
@@ -34,6 +37,23 @@ constexpr auto IR_OBSTACLE_RIGHT_PIN = 26;
 
 constexpr auto IR_TRACER_LEFT_PIN = 11;
 constexpr auto IR_TRACER_RIGHT_PIN = 10;
+
+constexpr auto XML_TREE = R"(
+<root main_tree_to_execute = "MainTree" >
+     <BehaviorTree ID="MainTree">
+        <Sequence name="main_behavior">
+            <Repeat num_cycles="3">
+            <ForceSuccess>
+            <DoOnce id="my_first_do_once">
+                <Stop/>
+            </DoOnce>
+            </ForceSuccess>
+            </Repeat>
+            <ResetDoOnce id="my_first_do_once"/>
+        </Sequence>
+     </BehaviorTree>
+</root>
+)";
 
 int main(int argc, char *argv[])
 {
@@ -61,7 +81,12 @@ int main(int argc, char *argv[])
                           move(movement),
                           make_shared<DoubleLineTracer>(leftTracer, rightTracer),
                           make_shared<ObstacleAvoider>(leftDetector, rightDetector),
-                          make_shared<USObstacleDetector>(usSensor));
+                          make_shared<USObstacleDetector>(usSensor),
+                          TREE_TICK_INTERVAL,
+                          DEBUG);
+
+    controller.makeTreeFromText(XML_TREE);
+    controller.start();
 
     return a.exec();
 }

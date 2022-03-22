@@ -23,6 +23,8 @@
 #include <iavoider.h>
 #include <iusobstacledetector.h>
 
+#include <dooncemanager.h>
+
 
 class Controller : public QObject, public IController
 {
@@ -38,6 +40,8 @@ public:
                std::shared_ptr<IAvoider> tracer,
                std::shared_ptr<IAvoider> sideObstacleDetector,
                std::shared_ptr<IUSObstacleDetector> frontObstacleDetector,
+               int tickInterval,
+               bool isDebug = false,
                QObject *parent = nullptr);
 
     virtual ~Controller() override;
@@ -48,17 +52,23 @@ public:
     virtual void start() override;
     virtual void stop() override;
 
+    template<typename InputType>
+    void addTreeConstant(const std::string &key, const InputType &constant)
+    {
+        m_blackboard->set(key, constant);
+    }
+
 private slots:
     void tickTree();
 
 private:
-    BT::Blackboard::Ptr createAndInitBlackboard();
     void registerNodes();
     void startSensors();
     void stopSensors();
     void requestSensorsUpdate();
 
 private:
+    BT::Blackboard::Ptr m_blackboard;
     BT::BehaviorTreeFactory m_factory;
     BT::Tree m_tree;
     std::unique_ptr<BT::StdCoutLogger> m_logger;
@@ -68,7 +78,6 @@ private:
     std::shared_ptr<IIRSensor> m_rightTracerSensor;
     std::shared_ptr<IIRSensor> m_leftDetectorSensor;
     std::shared_ptr<IIRSensor> m_rightDetectorSensor;
-
     std::vector<std::shared_ptr<ISensor>> m_sensors;
 
     std::shared_ptr<IMovement> m_movement;
@@ -77,6 +86,6 @@ private:
     std::shared_ptr<IUSObstacleDetector> m_frontObstacleDetector;
 
     QTimer m_tickTimer;
-    int m_obstacleCount = 0;
-    bool m_hasFinishedObstacleTwo = false;
+    DoOnceManager m_doOnceManager;
+    int m_tickInterval = 1; // msS
 };

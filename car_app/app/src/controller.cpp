@@ -13,16 +13,14 @@
 #include <avoid.h>
 #include <noobstacleinfront.h>
 #include <avoidernotblocked.h>
+#include <doonce.h>
 
 using namespace std;
 using namespace BT;
 
-constexpr auto DEBUG = false;
-constexpr auto TICK_INTERVAL = DEBUG ? 250 : 20; // ms
+constexpr auto DEBUG = true;
+constexpr auto TICK_INTERVAL = DEBUG ? 1000 : 1; // ms
 constexpr auto SENSOR_UPDATE_INTERVAL = 0; // ms, 0 means manual ticking
-constexpr auto US_OBSTACLE_THRESHOLD = 15; // cm
-constexpr auto OBSTACLE_TO_DODGE = 2;
-
 
 Controller::Controller(std::shared_ptr<IUSSensor> usSensor,
                        std::shared_ptr<IIRSensor> leftTracerSensor,
@@ -33,12 +31,14 @@ Controller::Controller(std::shared_ptr<IUSSensor> usSensor,
                        std::shared_ptr<IAvoider> tracer,
                        std::shared_ptr<IAvoider> sideObstacleDetector,
                        std::shared_ptr<IUSObstacleDetector> frontObstacleDetector,
+                       int tickInterval,
+                       bool isDebug,
                        QObject *parent)
-    : QObject(parent), m_usSensor(usSensor), m_leftTracerSensor(leftTracerSensor),
-      m_rightTracerSensor(rightTracerSensor), m_leftDetectorSensor(leftDetectorSensor),
-      m_rightDetectorSensor(rightDetectorSensor), m_movement(movement),
-      m_tracer(tracer), m_sideObstacleDetector(sideObstacleDetector),
-      m_frontObstacleDetector(frontObstacleDetector)
+    : QObject(parent), m_blackboard(Blackboard::create()), m_usSensor(usSensor),
+      m_leftTracerSensor(leftTracerSensor), m_rightTracerSensor(rightTracerSensor),
+      m_leftDetectorSensor(leftDetectorSensor), m_rightDetectorSensor(rightDetectorSensor),
+      m_movement(movement), m_tracer(tracer), m_sideObstacleDetector(sideObstacleDetector),
+      m_frontObstacleDetector(frontObstacleDetector), m_tickInterval(tickInterval)
 {
     registerNodes();
 
@@ -49,6 +49,10 @@ Controller::Controller(std::shared_ptr<IUSSensor> usSensor,
     m_sensors.push_back(m_rightTracerSensor);
     m_sensors.push_back(m_leftDetectorSensor);
     m_sensors.push_back(m_rightDetectorSensor);
+
+    if (isDebug) {
+        m_logger = make_unique<StdCoutLogger>(m_tree);
+    }
 }
 
 Controller::~Controller()
@@ -59,7 +63,7 @@ Controller::~Controller()
 bool Controller::makeTreeFromFile(const std::string &filename)
 {
     try {
-        m_tree = m_factory.createTreeFromFile(filename, createAndInitBlackboard());
+        m_tree = m_factory.createTreeFromFile(filename, m_blackboard);
     } catch (const std::runtime_error &e) {
         qDebug() << e.what();
         return false;
@@ -70,7 +74,7 @@ bool Controller::makeTreeFromFile(const std::string &filename)
 bool Controller::makeTreeFromText(const std::string &text)
 {
     try {
-        m_tree = m_factory.createTreeFromText(text, createAndInitBlackboard());
+        m_tree = m_factory.createTreeFromText(text, m_blackboard);
     } catch (const std::runtime_error &e) {
         qDebug() << e.what();
         return false;
@@ -80,11 +84,7 @@ bool Controller::makeTreeFromText(const std::string &text)
 
 void Controller::start()
 {
-    if (DEBUG) {
-        m_logger = make_unique<StdCoutLogger>(m_tree);
-    }
-
-    m_tickTimer.start(TICK_INTERVAL);
+    m_tickTimer.start(m_tickInterval);
     startSensors();
     requestSensorsUpdate();
 }
@@ -97,18 +97,8 @@ void Controller::stop()
 
 void Controller::tickTree()
 {
-    if (DEBUG) {
-        qDebug() << "Ticking tree";
-    }
-
     requestSensorsUpdate();
     m_tree.tickRoot();
-}
-
-Blackboard::Ptr Controller::createAndInitBlackboard()
-{
-    auto blackboard = Blackboard::create();
-    return blackboard;
 }
 
 void Controller::registerNodes()
@@ -117,6 +107,10 @@ void Controller::registerNodes()
 
     auto moveBuilder = [this](const string &name, const NodeConfiguration &config) {
         return make_unique<Move>(m_movement, name, config);
+    };
+
+    auto stopBuilder = [this](const string &name, const NodeConfiguration &config) {
+        return make_unique<Stop>(m_movement, name);
     };
 
     auto avoidObstacleBuilder = [this](const string &name, const NodeConfiguration &config) {
@@ -128,6 +122,7 @@ void Controller::registerNodes()
     };
 
     m_factory.registerBuilder<Move>("Move", moveBuilder);
+    m_factory.registerBuilder<Stop>("Stop", stopBuilder);
     m_factory.registerBuilder<Avoid>("AvoidObstacle", avoidObstacleBuilder);
     m_factory.registerBuilder<Avoid>("AvoidLine", avoidLineBuilder);
 
@@ -149,6 +144,20 @@ void Controller::registerNodes()
     m_factory.registerBuilder<NoObstacleInFront>("NoObstacleInFront", noObstacleInFrontBuilder);
     m_factory.registerBuilder<AvoiderNotBlocked>("SidesNotBlocked", sidesNotBlockedBuilder);
     m_factory.registerBuilder<AvoiderNotBlocked>("TracersNotBlocked", tracersNotBlockedBuilder);
+
+
+    // ---- decorator nodes
+
+    auto doOnceBuilder = [this](const string &name, const NodeConfiguration &config) {
+        return make_unique<DoOnce>(m_doOnceManager, name, config);
+    };
+
+    auto resetDoOnceBuilder = [this](const string &name, const NodeConfiguration &config) {
+        return make_unique<ResetDoOnce>(m_doOnceManager, name, config);
+    };
+
+    m_factory.registerBuilder<DoOnce>("DoOnce", doOnceBuilder);
+    m_factory.registerBuilder<ResetDoOnce>("ResetDoOnce", resetDoOnceBuilder);
 }
 
 void Controller::startSensors()
