@@ -18,8 +18,6 @@
 using namespace std;
 using namespace BT;
 
-constexpr auto DEBUG = true;
-constexpr auto TICK_INTERVAL = DEBUG ? 1000 : 1; // ms
 constexpr auto SENSOR_UPDATE_INTERVAL = 0; // ms, 0 means manual ticking
 
 Controller::Controller(std::shared_ptr<IUSSensor> usSensor,
@@ -38,7 +36,8 @@ Controller::Controller(std::shared_ptr<IUSSensor> usSensor,
       m_leftTracerSensor(leftTracerSensor), m_rightTracerSensor(rightTracerSensor),
       m_leftDetectorSensor(leftDetectorSensor), m_rightDetectorSensor(rightDetectorSensor),
       m_movement(movement), m_tracer(tracer), m_sideObstacleDetector(sideObstacleDetector),
-      m_frontObstacleDetector(frontObstacleDetector), m_tickInterval(tickInterval)
+      m_frontObstacleDetector(frontObstacleDetector), m_tickInterval(tickInterval),
+      m_isDebug(isDebug)
 {
     registerNodes();
 
@@ -49,10 +48,6 @@ Controller::Controller(std::shared_ptr<IUSSensor> usSensor,
     m_sensors.push_back(m_rightTracerSensor);
     m_sensors.push_back(m_leftDetectorSensor);
     m_sensors.push_back(m_rightDetectorSensor);
-
-    if (isDebug) {
-        m_logger = make_unique<StdCoutLogger>(m_tree);
-    }
 }
 
 Controller::~Controller()
@@ -64,6 +59,9 @@ bool Controller::makeTreeFromFile(const std::string &filename)
 {
     try {
         m_tree = m_factory.createTreeFromFile(filename, m_blackboard);
+        if (m_isDebug) {
+            m_logger = make_unique<StdCoutLogger>(m_tree);
+        }
     } catch (const std::runtime_error &e) {
         qDebug() << e.what();
         return false;
@@ -75,6 +73,9 @@ bool Controller::makeTreeFromText(const std::string &text)
 {
     try {
         m_tree = m_factory.createTreeFromText(text, m_blackboard);
+        if (m_isDebug) {
+            m_logger = make_unique<StdCoutLogger>(m_tree);
+        }
     } catch (const std::runtime_error &e) {
         qDebug() << e.what();
         return false;

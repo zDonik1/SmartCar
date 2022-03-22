@@ -10,19 +10,27 @@
 
 set(CAR_APP_TARGET SmartCarApp)
 
+if (${CMAKE_CROSSCOMPILING})
+    set(BEHAVIORS_PATH "/tmp/behaviors/")
+else()
+    set(BEHAVIORS_PATH "${CMAKE_CURRENT_BINARY_DIR}/behaviors/")
+endif()
+
 
 # ==== SOURCE FILES =========================================
 
 set(HEADERS
     include/icontroller.h
     include/controller.h
-    include/timeline.h
 )
 
 set(SOURCES
     src/main.cpp
     src/controller.cpp
-    src/timeline.cpp
+)
+
+set(BEHAVIORS
+    behaviors/test_do_once.xml
 )
 
 
@@ -34,7 +42,9 @@ find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Core REQUIRED)
 
 # ==== MAKING TARGET =========================================
 
-add_executable(${CAR_APP_TARGET} ${HEADERS} ${SOURCES})
+add_executable(${CAR_APP_TARGET} ${HEADERS} ${SOURCES} ${BEHAVIORS})
+
+add_compile_definitions(BEHAVIORS_PATH="${BEHAVIORS_PATH}")
 
 target_link_libraries(${CAR_APP_TARGET}
     behaviors
@@ -45,10 +55,9 @@ target_include_directories(${CAR_APP_TARGET}
         include
 )
 
-
 # ==== INSTALLATION =========================================
 
 if (${CMAKE_CROSSCOMPILING})
-    install(TARGETS ${CAR_APP_TARGET}
-        RUNTIME DESTINATION "/tmp/")
+    install(TARGETS ${CAR_APP_TARGET} RUNTIME DESTINATION "/tmp/")
 endif()
+install(DIRECTORY behaviors/ DESTINATION ${BEHAVIORS_PATH})
