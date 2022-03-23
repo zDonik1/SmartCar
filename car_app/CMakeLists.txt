@@ -14,4 +14,4 @@ find_package(OpenCV REQUIRED)
 # ==== SUBMODULES =========================================
 
 add_subdirectory(app)
-add_subdirectory(peripherals)
+add_subdirectory(camera)

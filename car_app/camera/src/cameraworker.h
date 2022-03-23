@@ -7,10 +7,10 @@
 
 #pragma once
 
-#include <QObject>
-
 #include <opencv2/core.hpp>
 #include <libcamera/camera.h>
+
+#include <QObject>
 
 class CameraWorker : public QObject
 {
