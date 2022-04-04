@@ -11,6 +11,13 @@
 set(SMART_CAR_TARGET SmartCarApp)
 
 
+# ==== FINDING PACKAGES =========================================
+
+# Qt
+find_package(QT NAMES Qt6 Qt5 COMPONENTS Core REQUIRED)
+find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Core REQUIRED)
+
+
 # ==== MAKING TARGET =========================================
 
 add_executable(${SMART_CAR_TARGET}
