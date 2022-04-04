@@ -25,6 +25,7 @@ set(SOURCES
     src/cameraworker.cpp
 )
 
+add_compile_definitions(QT_NO_KEYWORDS)
 
 # ==== FINDING PACKAGES =========================================
 

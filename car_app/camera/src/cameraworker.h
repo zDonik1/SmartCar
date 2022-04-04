@@ -7,28 +7,40 @@
 
 #pragma once
 
-#include <opencv2/core.hpp>
-#include <libcamera/camera.h>
+#include <queue>
 
 #include <QObject>
+
+#include <opencv2/core.hpp>
+
+#include <libcamera/base/span.h>
+#include <libcamera/camera.h>
+#include <libcamera/camera_manager.h>
+
+using namespace std;
+using namespace libcamera;
 
 class CameraWorker : public QObject
 {
     Q_OBJECT
 
 public:
-    CameraWorker(libcamera::Camera &camera);
-    virtual ~CameraWorker();
+    CameraWorker();
 
-    void start();
+    bool start();
 
-signals:
+Q_SIGNALS:
     void frameReady();
 
-private slots:
-    void captureFrame();
+private:
+    bool openCamera();
+    bool configureCamera();
+    bool startCamera();
 
 private:
-    libcamera::Camera &m_camera;
-    cv::Mat m_frame;
+    unique_ptr<CameraManager> m_cameraManager;
+    shared_ptr<Camera> m_camera;
+    unique_ptr<CameraConfiguration> m_configuration;
+    map<FrameBuffer *, vector<Span<uint8_t>>> mapped_buffers_;
+    map<Stream *, queue<FrameBuffer *>> frame_buffers_;
 };
