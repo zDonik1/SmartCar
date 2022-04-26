@@ -10,11 +10,16 @@
 #include <QDebug>
 
 #include <sys/mman.h>
-#include <libcamera/framebuffer_allocator.h>
+#include <libcamera/control_ids.h>
+#include <libcamera/formats.h>
 
 constexpr auto DEFAULT_CAMERA = 0;
+constexpr auto ASPECT_RATIO = 4.f / 3.f;
+constexpr int CAPTURE_HEIGHT = 972;
+constexpr int CAPTURE_WIDTH = CAPTURE_HEIGHT * ASPECT_RATIO;
 
 CameraWorker::CameraWorker()
+    : m_controls(controls::controls)
 {}
 
 bool CameraWorker::start()
@@ -31,19 +36,27 @@ bool CameraWorker::start()
     return true;
 }
 
+FramePtr CameraWorker::nextFrame()
+{
+    auto frame = m_frameRefs.front();
+    m_frameRefs.pop();
+    return frame;
+}
+
 bool CameraWorker::openCamera()
 {
-    if (!m_cameraManager->start()) {
-        qWarning() << "Couldn't start CameraManager!";
+    int code = m_cameraManager.start();
+    if (code != 0) {
+        qWarning() << "Couldn't start CameraManager. Code:" << code;
         return false;
     }
 
-    if (m_cameraManager->cameras().size() == 0) {
+    if (m_cameraManager.cameras().size() == 0) {
         qWarning() << "No cameras available";
         return false;
     }
 
-    m_camera = m_cameraManager->cameras()[DEFAULT_CAMERA];
+    m_camera = m_cameraManager.cameras()[DEFAULT_CAMERA];
 
     if (!m_camera) {
         qWarning() << "Couldn't find default camera";
@@ -69,6 +82,11 @@ bool CameraWorker::configureCamera()
         return false;
     }
 
+    auto &config = m_configuration->at(0);
+    config.pixelFormat = formats::RGB888;
+    config.size.height = CAPTURE_HEIGHT;
+    config.size.width = CAPTURE_WIDTH;
+
     if (m_configuration->validate() == CameraConfiguration::Invalid) {
         qWarning() << "Camera configuration is invalid";
         return false;
@@ -82,34 +100,36 @@ bool CameraWorker::configureCamera()
 
     // allocating buffers
 
-    FrameBufferAllocator allocator_{m_camera};
-    for (StreamConfiguration &config : *m_configuration) {
-        Stream *stream = config.stream();
+    m_allocator = make_unique<FrameBufferAllocator>(m_camera);
+    for (auto &config : *m_configuration) {
+        auto stream = config.stream();
 
-        if (allocator_.allocate(stream) < 0)
-            throw std::runtime_error("failed to allocate capture buffers");
+        if (m_allocator->allocate(stream) < 0) {
+            qWarning() << "Failed to allocate capture buffers";
+            return false;
+        }
 
-        for (const std::unique_ptr<FrameBuffer> &buffer : allocator_.buffers(stream)) {
+        for (const auto &buffer : m_allocator->buffers(stream)) {
             // "Single plane" buffers appear as multi-plane here, but we can spot them because then
             // planes all share the same fd. We accumulate them so as to mmap the buffer only once.
-            size_t buffer_size = 0;
+            size_t bufferSize = 0;
             for (unsigned i = 0; i < buffer->planes().size(); i++) {
-                const FrameBuffer::Plane &plane = buffer->planes()[i];
-                buffer_size += plane.length;
+                auto &plane = buffer->planes()[i];
+                bufferSize += plane.length;
                 if (i == buffer->planes().size() - 1
                     || plane.fd.get() != buffer->planes()[i + 1].fd.get()) {
-                    void *memory = mmap(NULL,
-                                        buffer_size,
-                                        PROT_READ | PROT_WRITE,
-                                        MAP_SHARED,
-                                        plane.fd.get(),
-                                        0);
-                    mapped_buffers_[buffer.get()].push_back(
-                        libcamera::Span<uint8_t>(static_cast<uint8_t *>(memory), buffer_size));
-                    buffer_size = 0;
+                    auto memory = mmap(NULL,
+                                       bufferSize,
+                                       PROT_READ | PROT_WRITE,
+                                       MAP_SHARED,
+                                       plane.fd.get(),
+                                       0);
+                    m_mappedBuffers[buffer.get()].push_back(
+                        libcamera::Span<uint8_t>(static_cast<uint8_t *>(memory), bufferSize));
+                    bufferSize = 0;
                 }
             }
-            frame_buffers_[stream].push(buffer.get());
+            m_frameBuffers[stream].push(buffer.get());
         }
     }
 
@@ -118,5 +138,128 @@ bool CameraWorker::configureCamera()
 
 bool CameraWorker::startCamera()
 {
+    if (!makeRequests())
+        return false;
+
+    if (m_camera->start(&m_controls)) {
+        qWarning() << "Failed to start camera!";
+        return false;
+    }
+
+    m_controls.clear();
+    m_cameraStarted = true;
+    m_lastTimestamp = 0;
+    m_camera->requestCompleted.connect(this, &CameraWorker::requestComplete);
+
+    for (auto &request : m_requests) {
+        if (m_camera->queueRequest(request.get()) < 0) {
+            qWarning() << "Failed to queue request in startCamera";
+            return false;
+        }
+    }
+
     return true;
+}
+
+bool CameraWorker::makeRequests()
+{
+    auto freeBuffers(m_frameBuffers);
+    while (true)
+    {
+        for (const auto &config : *m_configuration)
+        {
+            const auto stream = config.stream();
+            if (stream == m_configuration->at(0).stream())
+            {
+                if (freeBuffers[stream].empty())
+                    return true;
+
+                auto request = m_camera->createRequest();
+                if (!request) {
+                    qWarning() << "Failed to make request.";
+                    return false;
+                }
+                m_requests.push_back(std::move(request));
+            } else if (freeBuffers[stream].empty()) {
+                qWarning() << "Concurrent streams need matching numbers of buffers.";
+                return false;
+            }
+
+            FrameBuffer *buffer = freeBuffers[stream].front();
+            freeBuffers[stream].pop();
+            if (m_requests.back()->addBuffer(stream, buffer) < 0) {
+                qWarning() << "Failed to add buffer to request.";
+                return false;
+            }
+        }
+    }
+}
+
+void CameraWorker::requestComplete(Request *request)
+{
+    if (request->status() == Request::RequestCancelled)
+        return;
+
+    auto stream = m_configuration->at(0).stream();
+    auto config = stream->configuration();
+    auto itr = m_mappedBuffers.find(request->buffers().at(stream));
+    auto buffer = itr == end(m_mappedBuffers) ? Span<uint8_t>() : itr->second[0];
+    auto frame = new Frame(m_sequence++,
+                           Mat(config.size.height,
+                               config.size.width,
+                               CV_8UC3,
+                               buffer.data(),
+                               config.stride));
+    FramePtr payload(frame, [this](Frame *frame) { queueRequest(frame); });
+
+    {
+        lock_guard<mutex> lock(m_frameMutex);
+        m_frameRequests[frame] = request;
+    }
+
+    // We calculate the instantaneous framerate in case anyone wants it.
+    uint64_t timestamp = request->buffers().begin()->second->metadata().timestamp;
+    if (m_lastTimestamp == 0 || m_lastTimestamp == timestamp)
+        payload->framerate = 0;
+    else
+        payload->framerate = 1e9 / (timestamp - m_lastTimestamp);
+    m_lastTimestamp = timestamp;
+
+    m_frameRefs.push(payload);
+    Q_EMIT frameReady();
+}
+
+void CameraWorker::queueRequest(Frame *frame)
+{
+    // This function may run asynchronously so needs protection from the
+    // camera stopping at the same time.
+    lock_guard<mutex> stop_lock(m_cameraStopMutex);
+    if (!m_cameraStarted)
+        return;
+
+    Request *request = nullptr;
+    {
+        // An application could be holding a CompletedRequest while it stops and re-starts
+        // the camera, after which we don't want to queue another request now.
+        lock_guard<mutex> lock(m_frameMutex);
+
+        auto itr = m_frameRequests.find(frame);
+        if (itr == end(m_frameRequests) || !itr->second)
+            return;
+
+        request = itr->second;
+
+        delete frame;
+        m_frameRequests.erase(itr);
+    }
+
+    request->reuse(Request::ReuseBuffers);
+
+    {
+        lock_guard<mutex> lock(m_controlMutex);
+        request->controls() = move(m_controls);
+    }
+
+    if (m_camera->queueRequest(request) < 0)
+        qWarning() << "Failed to queue request";
 }

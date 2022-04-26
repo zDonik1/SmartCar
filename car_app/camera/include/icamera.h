@@ -8,8 +8,6 @@
 #include <functional>
 #include <memory>
 
-#include "iframe.h"
-
 class ICamera
 {
 public:

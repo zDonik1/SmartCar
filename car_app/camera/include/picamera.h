@@ -13,10 +13,10 @@
 
 class CameraWorker;
 
-class PICamera : public ICamera
+class PICamera : public QObject, public ICamera
 {
 public:
-    PICamera();
+    explicit PICamera(QObject *parent = nullptr);
     virtual ~PICamera();
 
     virtual bool start() override;
@@ -24,4 +24,5 @@ public:
 private:
     std::unique_ptr<CameraWorker> m_worker;
     QThread m_captureThread;
+    bool once = false;
 };

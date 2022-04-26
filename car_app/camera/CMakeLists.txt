@@ -15,7 +15,7 @@ set(PERIPHERALS_TARGET peripherals)
 
 set(HEADERS
     include/icamera.h
-    include/iframe.h
+    include/frame.h
     include/picamera.h
     src/cameraworker.h
 )

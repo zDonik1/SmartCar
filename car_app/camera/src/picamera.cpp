@@ -7,28 +7,29 @@
 
 #include <picamera.h>
 
-#include <string>
-
 #include <QDebug>
 
-#include <libcamera/camera_manager.h>
-#include <libcamera/camera.h>
+#include <opencv2/imgcodecs.hpp>
 
 #include <cameraworker.h>
 
-PICamera::PICamera()
-{}
+PICamera::PICamera(QObject *parent) : QObject(parent) {}
 
 PICamera::~PICamera() {}
 
 bool PICamera::start()
 {
     m_worker = make_unique<CameraWorker>();
-    m_worker->start();
+    connect(m_worker.get(), &CameraWorker::frameReady, this, [this] {
+        if (once)
+            return;
+
+        qDebug() << imwrite("output.png", m_worker->nextFrame()->image);
+        once = true;
+    });
+    return m_worker->start();
 
 //    m_worker->moveToThread(&m_captureThread);
 //    m_captureThread.start();
 //    m_worker->start();
-
-    return true;
 }

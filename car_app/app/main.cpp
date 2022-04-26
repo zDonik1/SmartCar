@@ -15,7 +15,7 @@ int main(int argc, char *argv[])
     QCoreApplication a(argc, argv);
 
     PICamera camera;
-    camera.start();
+    qDebug() << camera.start();
 
     return a.exec();
 }
