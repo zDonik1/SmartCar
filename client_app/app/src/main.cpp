@@ -5,7 +5,8 @@
  *
  *************************************************************************/
 
-#include <QCoreApplication>
+#include <QGuiApplication>
+#include <QQmlApplicationEngine>
 #include <QDebug>
 
 #include <imagereceiver.h>
@@ -16,14 +17,24 @@ int main(int argc, char *argv[])
 {
     qRegisterMetaType<Frame>("Frame");
 
-    QCoreApplication a(argc, argv);
+    QGuiApplication app(argc, argv);
 
     ImageReceiver receiver;
     receiver.start();
 
-    QObject::connect(&receiver, &ImageReceiver::receivedFrame, &a, [](Frame frame) {
+    QObject::connect(&receiver, &ImageReceiver::receivedFrame, &app, [](Frame frame) {
         qDebug() << "received frame" << frame.sequence;
     });
 
-    return a.exec();
+    QQmlApplicationEngine engine;
+    engine.addImportPath("qrc:/");  // Import modules (assets, etc)
+    const QUrl url(QStringLiteral("qrc:/qml/Main.qml"));
+    QObject::connect(&engine, &QQmlApplicationEngine::objectCreated,
+        &app, [url](QObject *obj, const QUrl &objUrl) {
+            if (!obj && url == objUrl)
+                QCoreApplication::exit(-1);
+        }, Qt::QueuedConnection);
+    engine.load(url);
+
+    return app.exec();
 }
