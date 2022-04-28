@@ -11,12 +11,13 @@
 
 struct Frame
 {
+    Frame() = default;
     Frame(unsigned int seq, cv::Mat img) : sequence(seq), image(img) {}
 
 public:
     cv::Mat image;
-    unsigned int sequence;
-    float framerate;
+    unsigned int sequence = 0;
+    float framerate = 0;
 };
 
 using FramePtr = std::shared_ptr<Frame>;

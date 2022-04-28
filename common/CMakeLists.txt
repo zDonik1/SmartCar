@@ -8,25 +8,18 @@
 
 # ==== CONFIGURATION =========================================
 
-set(CAMERA_TARGET camera)
+set(COMMON_TARGET common)
 
 
 # ==== SOURCE FILES =========================================
 
 set(HEADERS
-    include/icamera.h
-    include/picamera.h
-    include/imageprocessor.h
-    src/cameraworker.h
+    include/frame.h
+    include/common.h
 )
 
 set(SOURCES
-    src/picamera.cpp
-    src/imageprocessor.cpp
-    src/cameraworker.cpp
 )
-
-add_compile_definitions(QT_NO_KEYWORDS)
 
 
 # ==== FINDING PACKAGES =========================================
@@ -38,32 +31,19 @@ find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Core REQUIRED)
 # OpenCV
 find_package(OpenCV REQUIRED)
 
-# pkg-config
-find_package(PkgConfig REQUIRED)
-
-# libcamera
-pkg_check_modules(LIBCAMERA REQUIRED IMPORTED_TARGET libcamera)
-
 
 # ==== MAKING TARGET =========================================
 
-add_library(${CAMERA_TARGET} ${HEADERS} ${SOURCES})
+add_library(${COMMON_TARGET} ${HEADERS} ${SOURCES})
 
-target_link_libraries(${CAMERA_TARGET}
+target_link_libraries(${COMMON_TARGET}
     PUBLIC
         Qt${QT_VERSION_MAJOR}::Core
         ${OpenCV_LIBS}
-        common
-
-    PRIVATE
-        PkgConfig::LIBCAMERA
 )
 
-target_include_directories(${CAMERA_TARGET}
+target_include_directories(${COMMON_TARGET}
     PUBLIC
         include
-
-    PRIVATE
-        src
         ${OpenCV_INCLUDE_DIRS}
 )

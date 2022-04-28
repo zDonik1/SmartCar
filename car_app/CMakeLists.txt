@@ -3,9 +3,6 @@
 # BehaviorTree.CPP
 find_package(BehaviorTreeV3 REQUIRED)
 
-# OpenCV
-find_package(OpenCV REQUIRED)
-
 
 # ==== SUBMODULES =========================================
 

@@ -7,22 +7,20 @@
 
 #pragma once
 
-#include <QThread>
-
-#include <icamera.h>
+#include <imageprocessor.h>
 
 class CameraWorker;
 
-class PICamera : public QObject, public ICamera
+class PICamera final : public ICamera
 {
+    Q_OBJECT
+
 public:
     explicit PICamera(QObject *parent = nullptr);
     virtual ~PICamera();
 
-    virtual bool start() override;
+    bool start() override;
 
 private:
     std::unique_ptr<CameraWorker> m_worker;
-    QThread m_captureThread;
-    bool once = false;
 };

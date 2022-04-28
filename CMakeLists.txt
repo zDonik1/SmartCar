@@ -23,4 +23,10 @@ set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/cmake)
 
 # ==== SUBMODULES =========================================
 
-add_subdirectory(car_app)
+if(${CMAKE_CROSSCOMPILING})
+    add_subdirectory(car_app)
+else()
+    add_subdirectory(client_app)
+endif()
+
+add_subdirectory(common)

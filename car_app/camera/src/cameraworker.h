@@ -29,14 +29,12 @@ class CameraWorker : public QObject
     Q_OBJECT
 
 public:
-    CameraWorker();
+    explicit CameraWorker(QObject *parent = nullptr);
 
     bool start();
 
-    FramePtr nextFrame();
-
 Q_SIGNALS:
-    void frameReady();
+    void frameReady(FramePtr frame);
 
 private:
     bool openCamera();
@@ -56,7 +54,6 @@ private:
     map<Stream *, queue<FrameBuffer *>> m_frameBuffers;
     vector<unique_ptr<Request>> m_requests;
     map<Frame *, Request *> m_frameRequests;
-    queue<FramePtr> m_frameRefs;
     ControlList m_controls;
 
     mutex m_frameMutex;

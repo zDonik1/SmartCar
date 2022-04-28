@@ -13,14 +13,11 @@
 #include <libcamera/control_ids.h>
 #include <libcamera/formats.h>
 
-constexpr auto DEFAULT_CAMERA = 0;
-constexpr auto ASPECT_RATIO = 4.f / 3.f;
-constexpr int CAPTURE_HEIGHT = 972;
-constexpr int CAPTURE_WIDTH = CAPTURE_HEIGHT * ASPECT_RATIO;
+#include <common.h>
 
-CameraWorker::CameraWorker()
-    : m_controls(controls::controls)
-{}
+constexpr auto DEFAULT_CAMERA = 0;
+
+CameraWorker::CameraWorker(QObject *parent) : QObject(parent), m_controls(controls::controls) {}
 
 bool CameraWorker::start()
 {
@@ -34,13 +31,6 @@ bool CameraWorker::start()
         return false;
 
     return true;
-}
-
-FramePtr CameraWorker::nextFrame()
-{
-    auto frame = m_frameRefs.front();
-    m_frameRefs.pop();
-    return frame;
 }
 
 bool CameraWorker::openCamera()
@@ -225,8 +215,7 @@ void CameraWorker::requestComplete(Request *request)
         payload->framerate = 1e9 / (timestamp - m_lastTimestamp);
     m_lastTimestamp = timestamp;
 
-    m_frameRefs.push(payload);
-    Q_EMIT frameReady();
+    Q_EMIT frameReady(payload);
 }
 
 void CameraWorker::queueRequest(Frame *frame)

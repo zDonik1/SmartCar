@@ -13,23 +13,14 @@
 
 #include <cameraworker.h>
 
-PICamera::PICamera(QObject *parent) : QObject(parent) {}
+PICamera::PICamera(QObject *parent) : ICamera(parent), m_worker(make_unique<CameraWorker>())
+{
+    connect(m_worker.get(), &CameraWorker::frameReady, this, &PICamera::frameReady);
+}
 
 PICamera::~PICamera() {}
 
 bool PICamera::start()
 {
-    m_worker = make_unique<CameraWorker>();
-    connect(m_worker.get(), &CameraWorker::frameReady, this, [this] {
-        if (once)
-            return;
-
-        qDebug() << imwrite("output.png", m_worker->nextFrame()->image);
-        once = true;
-    });
     return m_worker->start();
-
-//    m_worker->moveToThread(&m_captureThread);
-//    m_captureThread.start();
-//    m_worker->start();
 }
