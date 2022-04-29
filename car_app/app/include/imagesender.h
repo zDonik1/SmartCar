@@ -8,7 +8,7 @@
 #pragma once
 
 #include <QObject>
-#include <QTcpSocket>
+#include <QUdpSocket>
 
 #include <imageprocessor.h>
 
@@ -24,5 +24,5 @@ private slots:
 
 private:
     std::shared_ptr<ImageProcessor> m_imageProcessor;
-    QTcpSocket m_socket;
+    QUdpSocket m_socket;
 };

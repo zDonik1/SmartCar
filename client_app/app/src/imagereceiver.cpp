@@ -17,48 +17,52 @@ using namespace cv;
 ImageReceiver::ImageReceiver(QObject *parent)
     : QObject{parent}, m_image(SCALED_IMAGE_WIDTH, SCALED_IMAGE_HEIGHT, QImage::Format_BGR888)
 {
-    connect(&m_server, &QTcpServer::newConnection, this, [this] {
-        m_socket = m_server.nextPendingConnection();
-        qDebug() << "Connection established on" << m_socket->peerAddress() << "with port"
-                 << m_socket->peerPort();
-
-        connect(m_socket, &QTcpSocket::stateChanged, this, [this](auto state) {
-            qDebug() << "Socket state changed:" << state;
-
-            if (m_socket->state() == QTcpSocket::UnconnectedState) {
-                listenToConnections();
-            }
-        });
-
-        connect(m_socket, &QTcpSocket::readyRead, this, &ImageReceiver::readFrames);
-
-        m_timer.start();
-    });
+    connect(&m_socket, &QAbstractSocket::readyRead, this, &ImageReceiver::readFrames);
 }
 
 void ImageReceiver::start()
 {
-    listenToConnections();
+    m_socket.bind(QHostAddress::Any, PORT);
+    qDebug() << "Socket bound to" << m_socket.peerAddress() << "with port" << m_socket.peerPort();
+    m_timer.start();
 }
 
 void ImageReceiver::readFrames()
 {
-    constexpr static auto BYTES_PER_LINE = SCALED_IMAGE_WIDTH * PIXEL_SIZE;
+    array<char, DATAGRAM_SIZE> buffer;
+    m_socket.readDatagram(buffer.data(), buffer.size());
+    //    qDebug() << (m_bytesRead += DATAGRAM_SIZE) / m_timer.elapsed() << "bytes per ms";
 
-    if (m_socket->bytesAvailable() < BYTES_PER_LINE)
+    auto offsetPtr = buffer.data();
+    auto sequence = *reinterpret_cast<SequenceType *>(offsetPtr);
+    offsetPtr += SEQUENCE_SIZE;
+    if (sequence < m_sequence) {
+        qWarning() << "Dropped line since sequence is lagging";
         return;
-
-    m_socket->read(reinterpret_cast<char *>(m_image.scanLine(m_row++)), BYTES_PER_LINE);
-    qDebug() << (m_bytesRead += BYTES_PER_LINE) / m_timer.elapsed() << "bytes per ms";
-
-    if (m_row >= SCALED_IMAGE_HEIGHT) {
-        m_row = 0;
-        emit receivedFrame(m_image);
     }
-}
 
-void ImageReceiver::listenToConnections()
-{
-    m_server.listen(QHostAddress::Any, PORT);
-    qDebug() << "Started listening to connections on port" << PORT;
+    if (sequence > m_sequence) {
+        emit receivedFrame(m_image);
+        qDebug() << "received frame" << m_sequence;
+        m_sequence = sequence;
+    }
+
+    auto row = *reinterpret_cast<RowType *>(offsetPtr);
+    offsetPtr += ROW_SIZE;
+    if (row >= SCALED_IMAGE_HEIGHT) {
+        qWarning() << "Invalid row number" << row << "Dropping line";
+        return;
+    }
+
+    auto lineCount = *reinterpret_cast<RowType *>(offsetPtr);
+    offsetPtr += LINE_COUNT_SIZE;
+    if (lineCount > LINES_SENT) {
+        qWarning() << "Invalid line count" << lineCount << "Dropping line";
+        return;
+    }
+
+    for (auto i = 0; i < lineCount; ++i) {
+        memcpy(m_image.scanLine(row + i), offsetPtr, LINE_SIZE);
+        offsetPtr += LINE_SIZE;
+    }
 }

@@ -61,6 +61,6 @@ private:
     mutex m_controlMutex;
 
     bool m_cameraStarted = false;
-    uint64_t m_sequence = 0;
+    SequenceType m_sequence = 0;
     uint64_t m_lastTimestamp;
 };

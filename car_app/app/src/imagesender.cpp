@@ -23,10 +23,10 @@ constexpr auto IPV4 = "192.168.100.180";
 ImageSender::ImageSender(shared_ptr<ImageProcessor> imageProcessor, QObject *parent)
     : QObject{parent}, m_imageProcessor(imageProcessor)
 {
-    connect(&m_socket, &QTcpSocket::stateChanged, this, [this, imageProcessor](auto state) {
+    connect(&m_socket, &QAbstractSocket::stateChanged, this, [this, imageProcessor](auto state) {
         qDebug() << "Socket state changed:" << state;
 
-        if (m_socket.state() == QTcpSocket::ConnectedState) {
+        if (m_socket.state() == QAbstractSocket::ConnectedState) {
             connect(imageProcessor.get(),
                     &ImageProcessor::frameReady,
                     this,
@@ -39,7 +39,7 @@ ImageSender::ImageSender(shared_ptr<ImageProcessor> imageProcessor, QObject *par
         }
     });
 
-    connect(&m_socket, &QTcpSocket::errorOccurred, this, [this] { qDebug() << m_socket.error(); });
+    connect(&m_socket, &QAbstractSocket::errorOccurred, this, [this] { qDebug() << m_socket.error(); });
 
     m_socket.connectToHost(IPV4, PORT);
 }
@@ -52,13 +52,32 @@ void ImageSender::sendFrame(FramePtr frame)
     }
 
     Mat mat(SCALED_IMAGE_HEIGHT, SCALED_IMAGE_WIDTH, CV_8UC3);
-    resize(frame->image, mat, mat.size(), 0, 0, INTER_AREA);
-    for (int i = 0; i < mat.rows; ++i) {
-        auto bytes = m_socket.write(reinterpret_cast<const char *>(mat.row(i).data),
-                                    mat.cols * PIXEL_SIZE);
-        if (bytes < 0) {
-            qWarning() << "Couldn't send frame";
-            return;
+    resize(frame->image, mat, mat.size(), 0, 0, INTER_NEAREST);
+
+    array<char, DATAGRAM_SIZE> buffer;
+    auto lineCount = 0;
+    auto offsetPtr = buffer.data();
+    for (RowType i = 0; i < mat.rows; ++i) {
+        if (lineCount == 0) {
+            memcpy(offsetPtr, reinterpret_cast<char *>(&frame->sequence), SEQUENCE_SIZE);
+            offsetPtr += SEQUENCE_SIZE;
+            memcpy(offsetPtr, reinterpret_cast<char *>(&i), ROW_SIZE);
+            offsetPtr += ROW_SIZE + LINE_COUNT_SIZE;
+        }
+
+        memcpy(offsetPtr, mat.row(i).data, LINE_SIZE);
+        offsetPtr += LINE_SIZE;
+        ++lineCount;
+
+        if (lineCount == LINES_SENT || i == mat.rows - 1) {
+            memcpy(buffer.data() + SEQUENCE_SIZE + ROW_SIZE,
+                   reinterpret_cast<char *>(&lineCount),
+                   ROW_SIZE);
+            while (m_socket.write(buffer.data(), buffer.size()) < 0) {
+                qWarning() << "Retrying sending line due to" << m_socket.error();
+            }
+            lineCount = 0;
+            offsetPtr = buffer.data();
         }
     }
     qDebug() << "sent frame" << frame->sequence;

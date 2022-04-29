@@ -8,8 +8,7 @@
 #pragma once
 
 #include <QObject>
-#include <QTcpServer>
-#include <QTcpSocket>
+#include <QUdpSocket>
 #include <QImage>
 #include <QElapsedTimer>
 
@@ -31,13 +30,9 @@ private slots:
     void readFrames();
 
 private:
-    void listenToConnections();
-
-private:
-    QTcpServer m_server;
-    QTcpSocket *m_socket = nullptr;
+    QUdpSocket m_socket;
     QImage m_image;
     QElapsedTimer m_timer;
-    int m_row = 0;
+    uint64_t m_sequence = 0;
     uint64_t m_bytesRead = 0;
 };

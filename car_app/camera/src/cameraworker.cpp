@@ -13,8 +13,6 @@
 #include <libcamera/control_ids.h>
 #include <libcamera/formats.h>
 
-#include <common.h>
-
 constexpr auto DEFAULT_CAMERA = 0;
 
 CameraWorker::CameraWorker(QObject *parent) : QObject(parent), m_controls(controls::controls) {}

@@ -13,8 +13,6 @@
 Controller::Controller(QObject *parent) : QObject{parent}
 {
     connect(&m_receiver, &ImageReceiver::receivedFrame, this, [this](QImage frame) {
-        qDebug() << "received frame";
-
         if (m_preview) {
             m_preview->setNewImage(frame);
         }
