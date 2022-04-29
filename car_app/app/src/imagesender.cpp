@@ -10,9 +10,13 @@
 #include <QHostAddress>
 #include <QTimer>
 
+#include <opencv2/imgcodecs.hpp>
+#include <opencv2/imgproc.hpp>
+
 #include <common.h>
 
 using namespace std;
+using namespace cv;
 
 constexpr auto IPV4 = "192.168.100.180";
 
@@ -47,8 +51,15 @@ void ImageSender::sendFrame(FramePtr frame)
         return;
     }
 
-    auto bytes = m_socket.write(reinterpret_cast<const char *>(frame->image.data),
-                                frame->image.rows * frame->image.cols * PIXEL_SIZE);
-    if (bytes < 0)
-        qWarning() << "Couldn't send frame";
+    Mat mat(SCALED_IMAGE_HEIGHT, SCALED_IMAGE_WIDTH, CV_8UC3);
+    resize(frame->image, mat, mat.size(), 0, 0, INTER_AREA);
+    for (int i = 0; i < mat.rows; ++i) {
+        auto bytes = m_socket.write(reinterpret_cast<const char *>(mat.row(i).data),
+                                    mat.cols * PIXEL_SIZE);
+        if (bytes < 0) {
+            qWarning() << "Couldn't send frame";
+            return;
+        }
+    }
+    qDebug() << "sent frame" << frame->sequence;
 }

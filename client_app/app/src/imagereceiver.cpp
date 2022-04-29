@@ -8,7 +8,6 @@
 #include <imagereceiver.h>
 
 #include <QHostAddress>
-#include <QTimer>
 
 #include <common.h>
 
@@ -16,7 +15,7 @@ using namespace std;
 using namespace cv;
 
 ImageReceiver::ImageReceiver(QObject *parent)
-    : QObject{parent}
+    : QObject{parent}, m_image(SCALED_IMAGE_WIDTH, SCALED_IMAGE_HEIGHT, QImage::Format_BGR888)
 {
     connect(&m_server, &QTcpServer::newConnection, this, [this] {
         m_socket = m_server.nextPendingConnection();
@@ -32,6 +31,8 @@ ImageReceiver::ImageReceiver(QObject *parent)
         });
 
         connect(m_socket, &QTcpSocket::readyRead, this, &ImageReceiver::readFrames);
+
+        m_timer.start();
     });
 }
 
@@ -42,12 +43,18 @@ void ImageReceiver::start()
 
 void ImageReceiver::readFrames()
 {
-    if (m_socket->bytesAvailable() < IMAGE_SIZE)
+    constexpr static auto BYTES_PER_LINE = SCALED_IMAGE_WIDTH * PIXEL_SIZE;
+
+    if (m_socket->bytesAvailable() < BYTES_PER_LINE)
         return;
 
-    Mat image(CAPTURE_HEIGHT, CAPTURE_WIDTH, CV_8UC3);
-    m_socket->read(reinterpret_cast<char *>(image.data), IMAGE_SIZE);
-    emit receivedFrame({m_sequence++, image});
+    m_socket->read(reinterpret_cast<char *>(m_image.scanLine(m_row++)), BYTES_PER_LINE);
+    qDebug() << (m_bytesRead += BYTES_PER_LINE) / m_timer.elapsed() << "bytes per ms";
+
+    if (m_row >= SCALED_IMAGE_HEIGHT) {
+        m_row = 0;
+        emit receivedFrame(m_image);
+    }
 }
 
 void ImageReceiver::listenToConnections()

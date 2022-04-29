@@ -8,7 +8,7 @@
 
 # ==== CONFIGURATION =========================================
 
-set(SMART_CAR_TARGET SmartCarApp)
+set(SMART_CAR_TARGET smart_car_app)
 
 
 # ==== SOURCE FILES =========================================

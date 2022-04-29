@@ -15,11 +15,15 @@ set(CLIENT_APP_TARGET client_app)
 
 set(HEADERS
     include/imagereceiver.h
+    include/streampreview.h
+    include/controller.h
 )
 
 set(SOURCES
     src/main.cpp
     src/imagereceiver.cpp
+    src/streampreview.cpp
+    src/controller.cpp
 )
 
 set(RESOURCES

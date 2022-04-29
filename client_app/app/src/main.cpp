@@ -7,27 +7,31 @@
 
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
+#include <QQmlContext>
 #include <QDebug>
 
-#include <imagereceiver.h>
+#include <controller.h>
 
 using namespace std;
 
 int main(int argc, char *argv[])
 {
     qRegisterMetaType<Frame>("Frame");
+    qmlRegisterType<StreamPreview>("Stream", 1, 0, "StreamPreview");
+    qmlRegisterUncreatableType<Controller>("Controller",
+                                           1,
+                                           0,
+                                           "Controller",
+                                           "Created by the main code");
 
     QGuiApplication app(argc, argv);
 
-    ImageReceiver receiver;
-    receiver.start();
-
-    QObject::connect(&receiver, &ImageReceiver::receivedFrame, &app, [](Frame frame) {
-        qDebug() << "received frame" << frame.sequence;
-    });
+    Controller controller;
 
     QQmlApplicationEngine engine;
     engine.addImportPath("qrc:/");  // Import modules (assets, etc)
+    engine.rootContext()->setContextProperty("controller", &controller);
+
     const QUrl url(QStringLiteral("qrc:/qml/Main.qml"));
     QObject::connect(&engine, &QQmlApplicationEngine::objectCreated,
         &app, [url](QObject *obj, const QUrl &objUrl) {

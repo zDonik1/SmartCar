@@ -10,6 +10,8 @@
 #include <QObject>
 #include <QTcpServer>
 #include <QTcpSocket>
+#include <QImage>
+#include <QElapsedTimer>
 
 #include <frame.h>
 
@@ -23,7 +25,7 @@ public:
     void start();
 
 signals:
-    void receivedFrame(Frame frame);
+    void receivedFrame(QImage frame);
 
 private slots:
     void readFrames();
@@ -34,5 +36,8 @@ private:
 private:
     QTcpServer m_server;
     QTcpSocket *m_socket = nullptr;
-    unsigned int m_sequence = 0;
+    QImage m_image;
+    QElapsedTimer m_timer;
+    int m_row = 0;
+    uint64_t m_bytesRead = 0;
 };
