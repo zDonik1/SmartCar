@@ -22,9 +22,13 @@ ImageReceiver::ImageReceiver(QObject *parent)
 
 void ImageReceiver::start()
 {
-    m_socket.bind(QHostAddress::Any, PORT);
-    qDebug() << "Socket bound to" << m_socket.peerAddress() << "with port" << m_socket.peerPort();
-    m_timer.start();
+    if (m_socket.bind(QHostAddress::Any, PORT)) {
+        qDebug() << "Socket bound to" << m_socket.peerAddress() << "with port"
+                 << m_socket.peerPort();
+        m_timer.start();
+    } else {
+        qWarning() << "Couldn't bind to port" << PORT;
+    }
 }
 
 void ImageReceiver::readFrames()
