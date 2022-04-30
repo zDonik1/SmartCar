@@ -17,12 +17,15 @@ class ImageSender : public QObject
     Q_OBJECT
 
 public:
-    ImageSender(std::shared_ptr<ImageProcessor> imageProcessor, QObject *parent = nullptr);
+    ImageSender(std::shared_ptr<ImageProcessor> imageProcessor,
+                QHostAddress address,
+                QObject *parent = nullptr);
 
 private slots:
     void sendFrame(FramePtr frame);
 
 private:
     std::shared_ptr<ImageProcessor> m_imageProcessor;
+    QHostAddress m_address;
     QUdpSocket m_socket;
 };

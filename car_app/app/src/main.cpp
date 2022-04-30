@@ -14,6 +14,8 @@
 
 using namespace std;
 
+constexpr auto IP = "192.168.100.180";
+
 int main(int argc, char *argv[])
 {
     qRegisterMetaType<FramePtr>("FramePtr");
@@ -22,7 +24,7 @@ int main(int argc, char *argv[])
 
     auto camera = make_shared<PICamera>();
     auto processor = make_shared<ImageProcessor>(camera);
-    ImageSender sender(processor);
+    ImageSender sender(processor, QHostAddress{IP});
 
     camera->start();
     processor->start();

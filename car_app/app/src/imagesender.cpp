@@ -18,10 +18,10 @@
 using namespace std;
 using namespace cv;
 
-constexpr auto IPV4 = "192.168.100.180";
-
-ImageSender::ImageSender(shared_ptr<ImageProcessor> imageProcessor, QObject *parent)
-    : QObject{parent}, m_imageProcessor(imageProcessor)
+ImageSender::ImageSender(shared_ptr<ImageProcessor> imageProcessor,
+                         QHostAddress address,
+                         QObject *parent)
+    : QObject(parent), m_address(address), m_imageProcessor(imageProcessor)
 {
     connect(&m_socket, &QAbstractSocket::stateChanged, this, [this, imageProcessor](auto state) {
         qDebug() << "Socket state changed:" << state;
@@ -41,7 +41,7 @@ ImageSender::ImageSender(shared_ptr<ImageProcessor> imageProcessor, QObject *par
 
     connect(&m_socket, &QAbstractSocket::errorOccurred, this, [this] { qDebug() << m_socket.error(); });
 
-    m_socket.connectToHost(IPV4, PORT);
+    m_socket.connectToHost(m_address, PORT);
 }
 
 void ImageSender::sendFrame(FramePtr frame)
