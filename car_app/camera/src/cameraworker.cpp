@@ -17,6 +17,11 @@ constexpr auto DEFAULT_CAMERA = 0;
 
 CameraWorker::CameraWorker(QObject *parent) : QObject(parent), m_controls(controls::controls) {}
 
+CameraWorker::~CameraWorker()
+{
+    stop();
+}
+
 bool CameraWorker::start()
 {
     if (!openCamera())
@@ -29,6 +34,12 @@ bool CameraWorker::start()
         return false;
 
     return true;
+}
+
+void CameraWorker::stop()
+{
+    stopCamera();
+    teardown();
 }
 
 bool CameraWorker::openCamera()
@@ -147,6 +158,42 @@ bool CameraWorker::startCamera()
     }
 
     return true;
+}
+
+void CameraWorker::stopCamera()
+{
+    {
+        // We don't want QueueRequest to run asynchronously while we stop the camera.
+        lock_guard<mutex> lock(m_cameraStopMutex);
+        if (m_cameraStarted) {
+            if (m_camera->stop())
+                throw std::runtime_error("failed to stop camera");
+
+            m_cameraStarted = false;
+        }
+    }
+
+    if (m_camera)
+        m_camera->requestCompleted.disconnect(this, &CameraWorker::requestComplete);
+
+    // An application might be holding a CompletedRequest, so queueRequest will get
+    // called to delete it later, but we need to know not to try and re-queue it.
+    m_frameRequests.clear();
+    m_requests.clear();
+    m_controls.clear(); // no need for mutex here
+}
+
+void CameraWorker::teardown()
+{
+    for (auto &keyValue : m_mappedBuffers) {
+        for (auto &span : keyValue.second)
+            munmap(span.data(), span.size());
+    }
+    m_mappedBuffers.clear();
+
+    m_allocator.reset();
+    m_configuration.reset();
+    m_frameBuffers.clear();
 }
 
 bool CameraWorker::makeRequests()

@@ -30,8 +30,10 @@ class CameraWorker : public QObject
 
 public:
     explicit CameraWorker(QObject *parent = nullptr);
+    virtual ~CameraWorker();
 
     bool start();
+    void stop();
 
 Q_SIGNALS:
     void frameReady(FramePtr frame);
@@ -40,6 +42,9 @@ private:
     bool openCamera();
     bool configureCamera();
     bool startCamera();
+
+    void stopCamera();
+    void teardown();
 
     bool makeRequests();
     void requestComplete(Request *request);

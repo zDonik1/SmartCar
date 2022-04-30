@@ -21,6 +21,11 @@ Controller::Controller(QObject *parent) : QObject{parent}
     m_receiver.start();
 }
 
+Controller::~Controller()
+{
+    m_receiver.stop();
+}
+
 void Controller::setStreamPreview(StreamPreview *preview)
 {
     m_preview = preview;

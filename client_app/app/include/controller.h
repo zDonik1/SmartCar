@@ -16,6 +16,7 @@ class Controller : public QObject
 
 public:
     explicit Controller(QObject *parent = nullptr);
+    virtual ~Controller();
 
     Q_INVOKABLE void setStreamPreview(StreamPreview *preview);
 

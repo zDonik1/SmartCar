@@ -24,3 +24,8 @@ bool PICamera::start()
 {
     return m_worker->start();
 }
+
+void PICamera::stop()
+{
+    m_worker->stop();
+}

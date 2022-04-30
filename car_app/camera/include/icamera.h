@@ -19,6 +19,7 @@ public:
     explicit ICamera(QObject *parent = nullptr) : QObject(parent) {}
 
     virtual bool start() = 0;
+    virtual void stop() = 0;
 
 Q_SIGNALS:
     void frameReady(FramePtr frame);

@@ -20,6 +20,10 @@ public:
     ImageSender(std::shared_ptr<ImageProcessor> imageProcessor,
                 QHostAddress address,
                 QObject *parent = nullptr);
+    virtual ~ImageSender();
+
+    void start();
+    void stop();
 
 private slots:
     void sendFrame(FramePtr frame);

@@ -39,9 +39,24 @@ ImageSender::ImageSender(shared_ptr<ImageProcessor> imageProcessor,
         }
     });
 
-    connect(&m_socket, &QAbstractSocket::errorOccurred, this, [this] { qDebug() << m_socket.error(); });
+    connect(&m_socket, &QAbstractSocket::errorOccurred, this, [this] {
+        qDebug() << m_socket.error();
+    });
+}
 
+ImageSender::~ImageSender()
+{
+    stop();
+}
+
+void ImageSender::start()
+{
     m_socket.connectToHost(m_address, PORT);
+}
+
+void ImageSender::stop()
+{
+    m_socket.disconnectFromHost();
 }
 
 void ImageSender::sendFrame(FramePtr frame)
@@ -80,5 +95,5 @@ void ImageSender::sendFrame(FramePtr frame)
             offsetPtr = buffer.data();
         }
     }
-    qDebug() << "sent frame" << frame->sequence;
+    qDebug() << "Sent frame" << frame->sequence;
 }

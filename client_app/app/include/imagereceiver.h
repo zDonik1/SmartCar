@@ -21,7 +21,8 @@ class ImageReceiver : public QObject
 public:
     explicit ImageReceiver(QObject *parent = nullptr);
 
-    void start();
+    bool start();
+    void stop();
 
 signals:
     void receivedFrame(QImage frame);

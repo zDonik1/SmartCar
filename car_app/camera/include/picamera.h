@@ -20,6 +20,7 @@ public:
     virtual ~PICamera();
 
     bool start() override;
+    void stop() override;
 
 private:
     std::unique_ptr<CameraWorker> m_worker;

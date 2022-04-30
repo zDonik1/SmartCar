@@ -18,17 +18,28 @@ ImageReceiver::ImageReceiver(QObject *parent)
     : QObject{parent}, m_image(SCALED_IMAGE_WIDTH, SCALED_IMAGE_HEIGHT, QImage::Format_BGR888)
 {
     connect(&m_socket, &QAbstractSocket::readyRead, this, &ImageReceiver::readFrames);
+
+    connect(&m_socket, &QAbstractSocket::stateChanged, this, [this](auto state) {
+        qDebug() << "Socket state changed:" << state;
+    });
 }
 
-void ImageReceiver::start()
+bool ImageReceiver::start()
 {
     if (m_socket.bind(QHostAddress::Any, PORT)) {
         qDebug() << "Socket bound to" << m_socket.peerAddress() << "with port"
                  << m_socket.peerPort();
         m_timer.start();
+        return true;
     } else {
         qWarning() << "Couldn't bind to port" << PORT;
+        return false;
     }
+}
+
+void ImageReceiver::stop()
+{
+    m_socket.disconnectFromHost();
 }
 
 void ImageReceiver::readFrames()

@@ -28,6 +28,7 @@ int main(int argc, char *argv[])
 
     camera->start();
     processor->start();
+    sender.start();
 
     return a.exec();
 }
