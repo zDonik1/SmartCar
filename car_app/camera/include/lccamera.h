@@ -7,21 +7,20 @@
 
 #pragma once
 
-#include <imageprocessor.h>
+#include <icamera.h>
 
-class CameraWorker;
-
-class PICamera final : public ICamera
+class LCCamera final : public ICamera
 {
     Q_OBJECT
 
 public:
-    explicit PICamera(QObject *parent = nullptr);
-    virtual ~PICamera();
+    explicit LCCamera(QObject *parent = nullptr);
+    virtual ~LCCamera();
 
     bool start() override;
     void stop() override;
 
 private:
-    std::unique_ptr<CameraWorker> m_worker;
+    class PImpl;
+    std::unique_ptr<PImpl> m_pimpl;
 };

@@ -15,15 +15,13 @@ set(CAMERA_TARGET camera)
 
 set(HEADERS
     include/icamera.h
-    include/picamera.h
+    include/lccamera.h
     include/imageprocessor.h
-    src/cameraworker.h
 )
 
 set(SOURCES
-    src/picamera.cpp
+    src/lccamera.cpp
     src/imageprocessor.cpp
-    src/cameraworker.cpp
 )
 
 add_compile_definitions(QT_NO_KEYWORDS)

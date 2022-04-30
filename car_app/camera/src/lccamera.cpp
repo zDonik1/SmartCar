@@ -1,28 +1,78 @@
 /**************************************************************************
  *
  *   @author Doniyorbek Tokhirov <tokhirovdoniyor@gmail.com>
- *   @date 25/02/2022
+ *   @date 24/02/2022
  *
  *************************************************************************/
 
-#include <cameraworker.h>
+#include <lccamera.h>
+
+#include <mutex>
+#include <queue>
 
 #include <QDebug>
 
 #include <sys/mman.h>
+#include <libcamera/base/span.h>
+#include <libcamera/camera.h>
+#include <libcamera/camera_manager.h>
+#include <libcamera/framebuffer_allocator.h>
 #include <libcamera/control_ids.h>
 #include <libcamera/formats.h>
 
+using namespace std;
+using namespace libcamera;
+using namespace cv;
+
 constexpr auto DEFAULT_CAMERA = 0;
 
-CameraWorker::CameraWorker(QObject *parent) : QObject(parent), m_controls(controls::controls) {}
 
-CameraWorker::~CameraWorker()
+// ==== PImpl ==============================================================
+
+class LCCamera::PImpl
 {
-    stop();
-}
+public:
+    explicit PImpl(LCCamera *pubImpl) : m_pubImpl(pubImpl), m_controls(controls::controls) {}
+    ~PImpl() { stop(); }
 
-bool CameraWorker::start()
+    bool start();
+    void stop();
+
+private:
+    bool openCamera();
+    bool configureCamera();
+    bool startCamera();
+
+    void stopCamera();
+    void teardown();
+
+    bool makeRequests();
+    void requestComplete(Request *request);
+    void queueRequest(Frame *frame);
+
+private:
+    LCCamera *m_pubImpl;
+
+    CameraManager m_cameraManager;
+    shared_ptr<Camera> m_camera;
+    unique_ptr<CameraConfiguration> m_configuration;
+    unique_ptr<FrameBufferAllocator> m_allocator;
+    map<FrameBuffer *, vector<Span<uint8_t>>> m_mappedBuffers;
+    map<Stream *, queue<FrameBuffer *>> m_frameBuffers;
+    vector<unique_ptr<Request>> m_requests;
+    map<Frame *, Request *> m_frameRequests;
+    ControlList m_controls;
+
+    mutex m_frameMutex;
+    mutex m_cameraStopMutex;
+    mutex m_controlMutex;
+
+    bool m_cameraStarted = false;
+    SequenceType m_sequence = 0;
+    uint64_t m_lastTimestamp;
+};
+
+bool LCCamera::PImpl::start()
 {
     if (!openCamera())
         return false;
@@ -36,13 +86,13 @@ bool CameraWorker::start()
     return true;
 }
 
-void CameraWorker::stop()
+void LCCamera::PImpl::stop()
 {
     stopCamera();
     teardown();
 }
 
-bool CameraWorker::openCamera()
+bool LCCamera::PImpl::openCamera()
 {
     int code = m_cameraManager.start();
     if (code != 0) {
@@ -71,7 +121,7 @@ bool CameraWorker::openCamera()
     return true;
 }
 
-bool CameraWorker::configureCamera()
+bool LCCamera::PImpl::configureCamera()
 {
     // configuring camera
 
@@ -135,7 +185,7 @@ bool CameraWorker::configureCamera()
     return true;
 }
 
-bool CameraWorker::startCamera()
+bool LCCamera::PImpl::startCamera()
 {
     if (!makeRequests())
         return false;
@@ -148,7 +198,7 @@ bool CameraWorker::startCamera()
     m_controls.clear();
     m_cameraStarted = true;
     m_lastTimestamp = 0;
-    m_camera->requestCompleted.connect(this, &CameraWorker::requestComplete);
+    m_camera->requestCompleted.connect(this, &PImpl::requestComplete);
 
     for (auto &request : m_requests) {
         if (m_camera->queueRequest(request.get()) < 0) {
@@ -160,7 +210,7 @@ bool CameraWorker::startCamera()
     return true;
 }
 
-void CameraWorker::stopCamera()
+void LCCamera::PImpl::stopCamera()
 {
     {
         // We don't want QueueRequest to run asynchronously while we stop the camera.
@@ -174,7 +224,7 @@ void CameraWorker::stopCamera()
     }
 
     if (m_camera)
-        m_camera->requestCompleted.disconnect(this, &CameraWorker::requestComplete);
+        m_camera->requestCompleted.disconnect(this, &PImpl::requestComplete);
 
     // An application might be holding a CompletedRequest, so queueRequest will get
     // called to delete it later, but we need to know not to try and re-queue it.
@@ -183,7 +233,7 @@ void CameraWorker::stopCamera()
     m_controls.clear(); // no need for mutex here
 }
 
-void CameraWorker::teardown()
+void LCCamera::PImpl::teardown()
 {
     for (auto &keyValue : m_mappedBuffers) {
         for (auto &span : keyValue.second)
@@ -196,7 +246,7 @@ void CameraWorker::teardown()
     m_frameBuffers.clear();
 }
 
-bool CameraWorker::makeRequests()
+bool LCCamera::PImpl::makeRequests()
 {
     auto freeBuffers(m_frameBuffers);
     while (true)
@@ -230,7 +280,7 @@ bool CameraWorker::makeRequests()
     }
 }
 
-void CameraWorker::requestComplete(Request *request)
+void LCCamera::PImpl::requestComplete(Request *request)
 {
     if (request->status() == Request::RequestCancelled)
         return;
@@ -260,10 +310,10 @@ void CameraWorker::requestComplete(Request *request)
         payload->framerate = 1e9 / (timestamp - m_lastTimestamp);
     m_lastTimestamp = timestamp;
 
-    Q_EMIT frameReady(payload);
+    Q_EMIT m_pubImpl->frameReady(payload);
 }
 
-void CameraWorker::queueRequest(Frame *frame)
+void LCCamera::PImpl::queueRequest(Frame *frame)
 {
     // This function may run asynchronously so needs protection from the
     // camera stopping at the same time.
@@ -296,4 +346,21 @@ void CameraWorker::queueRequest(Frame *frame)
 
     if (m_camera->queueRequest(request) < 0)
         qWarning() << "Failed to queue request";
+}
+
+
+// ==== LCCamera ==============================================================
+
+LCCamera::LCCamera(QObject *parent) : ICamera(parent), m_pimpl(make_unique<PImpl>(this)) {}
+
+LCCamera::~LCCamera() {}
+
+bool LCCamera::start()
+{
+    return m_pimpl->start();
+}
+
+void LCCamera::stop()
+{
+    m_pimpl->stop();
 }

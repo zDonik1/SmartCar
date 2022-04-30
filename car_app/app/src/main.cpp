@@ -8,7 +8,7 @@
 #include <QCoreApplication>
 #include <QDebug>
 
-#include <picamera.h>
+#include <lccamera.h>
 #include <imageprocessor.h>
 #include <imagesender.h>
 
@@ -22,7 +22,7 @@ int main(int argc, char *argv[])
 
     QCoreApplication a(argc, argv);
 
-    auto camera = make_shared<PICamera>();
+    auto camera = make_shared<LCCamera>();
     auto processor = make_shared<ImageProcessor>(camera);
     ImageSender sender(processor, QHostAddress{IP});
 
