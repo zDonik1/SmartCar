@@ -25,6 +25,7 @@ using namespace libcamera;
 using namespace cv;
 
 constexpr auto DEFAULT_CAMERA = 0;
+constexpr auto NANOSEC_IN_SEC = 1e9;
 
 
 // ==== PImpl ==============================================================
@@ -33,19 +34,18 @@ class LCCamera::PImpl
 {
 public:
     explicit PImpl(LCCamera *pubImpl) : m_pubImpl(pubImpl), m_controls(controls::controls) {}
-    ~PImpl() { stop(); }
+    ~PImpl() { m_pubImpl->stop(); }
 
-    bool start();
-    void stop();
-
-private:
+public:
     bool openCamera();
     bool configureCamera();
     bool startCamera();
 
     void stopCamera();
     void teardown();
+    void closeCamera();
 
+private:
     bool makeRequests();
     void requestComplete(Request *request);
     void queueRequest(Frame *frame);
@@ -67,30 +67,11 @@ private:
     mutex m_cameraStopMutex;
     mutex m_controlMutex;
 
+    bool m_cameraAcquired = false;
     bool m_cameraStarted = false;
     SequenceType m_sequence = 0;
     uint64_t m_lastTimestamp;
 };
-
-bool LCCamera::PImpl::start()
-{
-    if (!openCamera())
-        return false;
-
-    if (!configureCamera())
-        return false;
-
-    if (!startCamera())
-        return false;
-
-    return true;
-}
-
-void LCCamera::PImpl::stop()
-{
-    stopCamera();
-    teardown();
-}
 
 bool LCCamera::PImpl::openCamera()
 {
@@ -106,7 +87,6 @@ bool LCCamera::PImpl::openCamera()
     }
 
     m_camera = m_cameraManager.cameras()[DEFAULT_CAMERA];
-
     if (!m_camera) {
         qWarning() << "Couldn't find default camera";
         return false;
@@ -116,6 +96,7 @@ bool LCCamera::PImpl::openCamera()
         qWarning() << "Couldn't acquire camera";
         return false;
     }
+    m_cameraAcquired = true;
 
     qDebug() << "Acquired camera" << QString::fromStdString(m_camera->id());
     return true;
@@ -246,6 +227,15 @@ void LCCamera::PImpl::teardown()
     m_frameBuffers.clear();
 }
 
+void LCCamera::PImpl::closeCamera()
+{
+    if (m_cameraAcquired)
+        m_camera->release();
+    m_cameraAcquired = false;
+
+    m_camera.reset();
+}
+
 bool LCCamera::PImpl::makeRequests()
 {
     auto freeBuffers(m_frameBuffers);
@@ -307,7 +297,7 @@ void LCCamera::PImpl::requestComplete(Request *request)
     if (m_lastTimestamp == 0 || m_lastTimestamp == timestamp)
         payload->framerate = 0;
     else
-        payload->framerate = 1e9 / (timestamp - m_lastTimestamp);
+        payload->framerate = NANOSEC_IN_SEC / (timestamp - m_lastTimestamp);
     m_lastTimestamp = timestamp;
 
     Q_EMIT m_pubImpl->frameReady(payload);
@@ -357,10 +347,21 @@ LCCamera::~LCCamera() {}
 
 bool LCCamera::start()
 {
-    return m_pimpl->start();
+    if (!m_pimpl->openCamera())
+        return false;
+
+    if (!m_pimpl->configureCamera())
+        return false;
+
+    if (!m_pimpl->startCamera())
+        return false;
+
+    return true;
 }
 
 void LCCamera::stop()
 {
-    m_pimpl->stop();
+    m_pimpl->stopCamera();
+    m_pimpl->teardown();
+    m_pimpl->closeCamera();
 }

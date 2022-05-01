@@ -95,5 +95,5 @@ void ImageSender::sendFrame(FramePtr frame)
             offsetPtr = buffer.data();
         }
     }
-    qDebug() << "Sent frame" << frame->sequence;
+    qDebug() << "Sent frame" << frame->sequence << ", fps:" << frame->framerate;
 }
