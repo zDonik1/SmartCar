@@ -7,30 +7,75 @@
 
 #include <imageprocessor.h>
 
-#include <QDataStream>
-#include <QDebug>
-
 using namespace std;
 
-ImageProcessor::ImageProcessor(std::shared_ptr<ICamera> camera, QObject *parent)
-    : QThread(parent), m_camera(camera)
+
+// ==== ProcessThread ==============================================================
+
+void ImageProcessor::ProcessThread::start()
 {
-    connect(m_camera.get(), &ICamera::frameReady, this, [this](FramePtr frame) {
-        lock_guard<mutex> lock(m_mutex);
-        m_frameRefs.push(frame);
-        m_condVar.notify_all();
-    });
+    m_stop = false;
+    QThread::start();
 }
 
-void ImageProcessor::run()
+void ImageProcessor::ProcessThread::stop()
+{
+    lock_guard<mutex> lock(m_mutex);
+    m_stop = true;
+    m_condVar.notify_all();
+}
+
+void ImageProcessor::ProcessThread::enqueueFrame(FramePtr frame)
+{
+    lock_guard<mutex> lock(m_mutex);
+    m_frameRefs.push(frame);
+    m_condVar.notify_all();
+}
+
+void ImageProcessor::ProcessThread::run()
 {
     while (true) {
         unique_lock<mutex> lock(m_mutex);
-        m_condVar.wait(lock, [this] { return !m_frameRefs.empty(); });
+        m_condVar.wait(lock, [this] { return m_stop || !m_frameRefs.empty(); });
+
+        if (m_stop)
+            return;
 
         auto frame = m_frameRefs.front();
         m_frameRefs.pop();
 
-        Q_EMIT frameReady(frame);
+        Q_EMIT m_processor->frameReady(frame);
     }
+}
+
+
+// ==== ImageProcessor ==============================================================
+
+ImageProcessor::ImageProcessor(QObject *parent)
+    : IImageProcessor(parent), m_processThread(this)
+{}
+
+ImageProcessor::~ImageProcessor()
+{
+    ImageProcessor::stop();
+    m_processThread.wait();
+}
+
+void ImageProcessor::start(std::shared_ptr<ICamera> camera)
+{
+    if (m_processThread.isRunning())
+        return;
+
+    m_camera = camera;
+    connect(m_camera.get(), &ICamera::frameReady, this, [this](auto frame) {
+        m_processThread.enqueueFrame(frame);
+    });
+
+    m_processThread.start();
+}
+
+void ImageProcessor::stop()
+{
+    m_camera.reset();
+    m_processThread.stop();
 }

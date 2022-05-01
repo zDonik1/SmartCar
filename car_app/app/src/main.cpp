@@ -23,11 +23,11 @@ int main(int argc, char *argv[])
     QCoreApplication a(argc, argv);
 
     auto camera = make_shared<LCCamera>();
-    auto processor = make_shared<ImageProcessor>(camera);
+    auto processor = make_shared<ImageProcessor>();
     ImageSender sender(processor, QHostAddress{IP});
 
     camera->start();
-    processor->start();
+    processor->start(camera);
     sender.start();
 
     return a.exec();

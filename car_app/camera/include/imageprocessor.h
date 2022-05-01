@@ -11,24 +11,41 @@
 
 #include <QThread>
 
-#include <icamera.h>
+#include <iimageprocessor.h>
 
-class ImageProcessor : public QThread
+class ImageProcessor : public IImageProcessor
 {
-    Q_OBJECT
+    class ProcessThread : public QThread
+    {
+    public:
+        explicit ProcessThread(ImageProcessor *processor, QObject *parent = nullptr)
+            : QThread(parent), m_processor(processor)
+        {}
+
+        void start();
+        void stop();
+
+        void enqueueFrame(FramePtr frame);
+
+    protected:
+        void run() override;
+
+    private:
+        ImageProcessor *m_processor = nullptr;
+        std::queue<FramePtr> m_frameRefs;
+        std::mutex m_mutex;
+        std::condition_variable m_condVar;
+        bool m_stop = false;
+    };
 
 public:
-    explicit ImageProcessor(std::shared_ptr<ICamera> camera, QObject *parent = nullptr);
+    explicit ImageProcessor(QObject *parent = nullptr);
+    virtual ~ImageProcessor();
 
-Q_SIGNALS:
-    void frameReady(FramePtr frame);
-
-private:
-    void run() override;
+    virtual void start(std::shared_ptr<ICamera> camera) override;
+    virtual void stop() override;
 
 private:
+    ProcessThread m_processThread;
     std::shared_ptr<ICamera> m_camera;
-    std::queue<FramePtr> m_frameRefs;
-    std::mutex m_mutex;
-    std::condition_variable m_condVar;
 };

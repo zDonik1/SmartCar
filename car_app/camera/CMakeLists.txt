@@ -16,6 +16,7 @@ set(CAMERA_TARGET camera)
 set(HEADERS
     include/icamera.h
     include/lccamera.h
+    include/iimageprocessor.h
     include/imageprocessor.h
 )
 
