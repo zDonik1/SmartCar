@@ -24,8 +24,8 @@ using namespace std;
 using namespace libcamera;
 using namespace cv;
 
-constexpr auto DEFAULT_CAMERA = 0;
 constexpr auto NANOSEC_IN_SEC = 1e9;
+constexpr auto BUFFER_COUNT = 6;
 
 
 // ==== PImpl ==============================================================
@@ -33,7 +33,9 @@ constexpr auto NANOSEC_IN_SEC = 1e9;
 class LCCamera::PImpl
 {
 public:
-    explicit PImpl(LCCamera *pubImpl) : m_pubImpl(pubImpl), m_controls(controls::controls) {}
+    explicit PImpl(LCCamera *pubImpl, unsigned int cameraIndex)
+        : m_pubImpl(pubImpl), m_controls(controls::controls), m_cameraIndex(cameraIndex)
+    {}
     ~PImpl() { m_pubImpl->stop(); }
 
 public:
@@ -67,6 +69,7 @@ private:
     mutex m_cameraStopMutex;
     mutex m_controlMutex;
 
+    unsigned int m_cameraIndex = 0;
     bool m_cameraAcquired = false;
     bool m_cameraStarted = false;
     SequenceType m_sequence = 0;
@@ -86,7 +89,7 @@ bool LCCamera::PImpl::openCamera()
         return false;
     }
 
-    m_camera = m_cameraManager.cameras()[DEFAULT_CAMERA];
+    m_camera = m_cameraManager.cameras()[m_cameraIndex];
     if (!m_camera) {
         qWarning() << "Couldn't find default camera";
         return false;
@@ -116,6 +119,7 @@ bool LCCamera::PImpl::configureCamera()
     config.pixelFormat = formats::RGB888;
     config.size.height = CAPTURE_HEIGHT;
     config.size.width = CAPTURE_WIDTH;
+    config.bufferCount = BUFFER_COUNT; // 6 buffers is better than 4
 
     if (m_configuration->validate() == CameraConfiguration::Invalid) {
         qWarning() << "Camera configuration is invalid";
@@ -341,7 +345,9 @@ void LCCamera::PImpl::queueRequest(Frame *frame)
 
 // ==== LCCamera ==============================================================
 
-LCCamera::LCCamera(QObject *parent) : ICamera(parent), m_pimpl(make_unique<PImpl>(this)) {}
+LCCamera::LCCamera(unsigned int cameraIndex, QObject *parent)
+    : ICamera(parent), m_pimpl(make_unique<PImpl>(this, cameraIndex))
+{}
 
 LCCamera::~LCCamera() {}
 

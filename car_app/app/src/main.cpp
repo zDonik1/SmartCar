@@ -15,6 +15,7 @@
 using namespace std;
 
 constexpr auto IP = "192.168.100.180";
+constexpr auto DEFAULT_CAMERA = 0;
 
 int main(int argc, char *argv[])
 {
@@ -22,7 +23,7 @@ int main(int argc, char *argv[])
 
     QCoreApplication a(argc, argv);
 
-    auto camera = make_shared<LCCamera>();
+    auto camera = make_shared<LCCamera>(DEFAULT_CAMERA);
     auto processor = make_shared<ImageProcessor>();
     ImageSender sender(processor, QHostAddress{IP});
 

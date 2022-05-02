@@ -14,7 +14,7 @@ class LCCamera final : public ICamera
     Q_OBJECT
 
 public:
-    explicit LCCamera(QObject *parent = nullptr);
+    explicit LCCamera(unsigned int cameraIndex, QObject *parent = nullptr);
     virtual ~LCCamera();
 
     bool start() override;
