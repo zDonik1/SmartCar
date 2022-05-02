@@ -12,20 +12,15 @@
 #include <QImage>
 #include <QElapsedTimer>
 
-#include <frame.h>
+#include <iimagereceiver.h>
 
-class ImageReceiver : public QObject
+class ImageReceiver : public IImageReceiver
 {
-    Q_OBJECT
-
 public:
     explicit ImageReceiver(QObject *parent = nullptr);
 
-    bool start();
-    void stop();
-
-signals:
-    void receivedFrame(QImage frame);
+    virtual bool start() override;
+    virtual void stop() override;
 
 private slots:
     void readFrames();

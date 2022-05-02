@@ -16,7 +16,6 @@ using namespace std;
 
 int main(int argc, char *argv[])
 {
-    qRegisterMetaType<Frame>("Frame");
     qmlRegisterType<StreamPreview>("Stream", 1, 0, "StreamPreview");
     qmlRegisterUncreatableType<Controller>("Controller",
                                            1,

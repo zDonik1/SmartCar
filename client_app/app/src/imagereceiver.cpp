@@ -12,10 +12,9 @@
 #include <common.h>
 
 using namespace std;
-using namespace cv;
 
 ImageReceiver::ImageReceiver(QObject *parent)
-    : QObject{parent}, m_image(SCALED_IMAGE_WIDTH, SCALED_IMAGE_HEIGHT, QImage::Format_BGR888)
+    : IImageReceiver(parent), m_image(SCALED_IMAGE_WIDTH, SCALED_IMAGE_HEIGHT, QImage::Format_BGR888)
 {
     connect(&m_socket, &QAbstractSocket::readyRead, this, &ImageReceiver::readFrames);
 

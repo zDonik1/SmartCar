@@ -14,6 +14,7 @@ set(CLIENT_APP_TARGET client_app)
 # ==== SOURCE FILES =========================================
 
 set(HEADERS
+    include/iimagereceiver.h
     include/imagereceiver.h
     include/streampreview.h
     include/controller.h
