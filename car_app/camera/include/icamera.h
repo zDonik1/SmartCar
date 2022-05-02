@@ -7,17 +7,20 @@
 
 #pragma once
 
-#include <icamera.h>
+#include <QObject>
 
-namespace cv {
-class VideoCapture;
-}
+#include <frame.h>
 
-class PICamera : public ICamera
+class ICamera : public QObject
 {
-public:
-    PICamera();
-    virtual ~PICamera();
+    Q_OBJECT
 
-    virtual FramePtr newFrame() const override;
+public:
+    explicit ICamera(QObject *parent = nullptr) : QObject(parent) {}
+
+    virtual bool start() = 0;
+    virtual void stop() = 0;
+
+Q_SIGNALS:
+    void frameReady(FramePtr frame);
 };

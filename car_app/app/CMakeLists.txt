@@ -8,7 +8,7 @@
 
 # ==== CONFIGURATION =========================================
 
-set(CAR_APP_TARGET SmartCarApp)
+set(SMART_CAR_TARGET smart_car_app)
 
 if (${CMAKE_CROSSCOMPILING})
     set(BEHAVIORS_PATH "/tmp/behaviors/")
@@ -22,11 +22,14 @@ endif()
 set(HEADERS
     include/icontroller.h
     include/controller.h
+    include/iimagesender.h
+    include/imagesender.h
 )
 
 set(SOURCES
     src/main.cpp
     src/controller.cpp
+    src/imagesender.cpp
 )
 
 set(BEHAVIORS
@@ -36,28 +39,31 @@ set(BEHAVIORS
 
 # ==== FINDING PACKAGES =========================================
 
-find_package(QT NAMES Qt6 Qt5 COMPONENTS Core REQUIRED)
-find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Core REQUIRED)
+# Qt
+find_package(QT NAMES Qt6 Qt5 COMPONENTS Core Network REQUIRED)
+find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Core Network REQUIRED)
 
 
 # ==== MAKING TARGET =========================================
 
-add_executable(${CAR_APP_TARGET} ${HEADERS} ${SOURCES} ${BEHAVIORS})
+add_executable(${SMART_CAR_TARGET} ${HEADERS} ${SOURCES} ${BEHAVIORS})
 
 add_compile_definitions(BEHAVIORS_PATH="${BEHAVIORS_PATH}")
 
-target_link_libraries(${CAR_APP_TARGET}
+target_link_libraries(${SMART_CAR_TARGET}
+    Qt${QT_VERSION_MAJOR}::Core
+    Qt${QT_VERSION_MAJOR}::Network
     behaviors
+    camera
 )
 
-target_include_directories(${CAR_APP_TARGET}
+target_include_directories(${SMART_CAR_TARGET}
     PUBLIC
         include
 )
 
+
 # ==== INSTALLATION =========================================
 
-if (${CMAKE_CROSSCOMPILING})
-    install(TARGETS ${CAR_APP_TARGET} RUNTIME DESTINATION "/tmp/")
-endif()
+install(TARGETS ${SMART_CAR_TARGET} RUNTIME DESTINATION "/tmp/")
 install(DIRECTORY behaviors/ DESTINATION ${BEHAVIORS_PATH})

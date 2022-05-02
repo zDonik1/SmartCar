@@ -8,57 +8,61 @@
 
 # ==== CONFIGURATION =========================================
 
-set(PERIPHERALS_TARGET peripherals)
+set(CAMERA_TARGET camera)
 
 
 # ==== SOURCE FILES =========================================
 
 set(HEADERS
-    include/imotoractuator.h
-    include/motoractuator.h
-    include/iussensor.h
-    include/ussensor.h
-    src/usworker.h
-    include/iirsensor.h
-    include/irsensor.h
-    include/isensor.h
+    include/icamera.h
+    include/lccamera.h
+    include/iimageprocessor.h
+    include/imageprocessor.h
 )
 
 set(SOURCES
-    src/motoractuator.cpp
-    src/ussensor.cpp
-    src/usworker.cpp
-    src/irsensor.cpp
+    src/lccamera.cpp
+    src/imageprocessor.cpp
 )
+
+add_compile_definitions(QT_NO_KEYWORDS)
 
 
 # ==== FINDING PACKAGES =========================================
 
+# Qt
 find_package(QT NAMES Qt6 Qt5 COMPONENTS Core REQUIRED)
 find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Core REQUIRED)
 
-find_package(WiringPI REQUIRED)
-
+# OpenCV
 find_package(OpenCV REQUIRED)
+
+# pkg-config
+find_package(PkgConfig REQUIRED)
+
+# libcamera
+pkg_check_modules(LIBCAMERA REQUIRED IMPORTED_TARGET libcamera)
 
 
 # ==== MAKING TARGET =========================================
 
-add_library(${PERIPHERALS_TARGET} ${HEADERS} ${SOURCES})
+add_library(${CAMERA_TARGET} ${HEADERS} ${SOURCES})
 
-target_link_libraries(${PERIPHERALS_TARGET}
+target_link_libraries(${CAMERA_TARGET}
     PUBLIC
         Qt${QT_VERSION_MAJOR}::Core
+        ${OpenCV_LIBS}
+        common
 
     PRIVATE
-        wiringPi
-        ${OpenCV_LIBS}
+        PkgConfig::LIBCAMERA
 )
 
-target_include_directories(${PERIPHERALS_TARGET}
+target_include_directories(${CAMERA_TARGET}
     PUBLIC
         include
 
     PRIVATE
+        src
         ${OpenCV_INCLUDE_DIRS}
 )
