@@ -71,7 +71,6 @@ private:
 
     mutex m_frameMutex;
     mutex m_cameraStopMutex;
-    mutex m_controlMutex;
 
     bool m_cameraAcquired = false;
     bool m_cameraStarted = false;
@@ -218,7 +217,6 @@ void LCCamera::PImpl::stopCamera()
     // called to delete it later, but we need to know not to try and re-queue it.
     m_frameRequests.clear();
     m_requests.clear();
-    m_controls.clear(); // no need for mutex here
 }
 
 void LCCamera::PImpl::teardown()
@@ -335,11 +333,6 @@ void LCCamera::PImpl::queueRequest(Frame *frame)
     }
 
     request->reuse(Request::ReuseBuffers);
-
-    {
-        lock_guard<mutex> lock(m_controlMutex);
-        request->controls() = move(m_controls);
-    }
 
     if (m_camera->queueRequest(request) < 0)
         qWarning() << "Failed to queue request";
