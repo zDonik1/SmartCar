@@ -33,10 +33,10 @@ constexpr auto BUFFER_COUNT = 6;
 class LCCamera::PImpl
 {
 public:
-    explicit PImpl(LCCamera *pubImpl, unsigned int cameraIndex)
-        : m_pubImpl(pubImpl), m_controls(controls::controls), m_cameraIndex(cameraIndex)
+    explicit PImpl(LCCamera *pubImpl)
+        : pubImpl(pubImpl), m_controls(controls::controls)
     {}
-    ~PImpl() { m_pubImpl->stop(); }
+    ~PImpl() { pubImpl->stop(); }
 
 public:
     bool openCamera();
@@ -52,9 +52,13 @@ private:
     void requestComplete(Request *request);
     void queueRequest(Frame *frame);
 
-private:
-    LCCamera *m_pubImpl;
+public:
+    LCCamera *pubImpl;
+    unsigned int cameraIndex = 0;
+    unsigned int captureHeight = 0;
+    unsigned int captureWidth = 0;
 
+private:
     CameraManager m_cameraManager;
     shared_ptr<Camera> m_camera;
     unique_ptr<CameraConfiguration> m_configuration;
@@ -69,7 +73,6 @@ private:
     mutex m_cameraStopMutex;
     mutex m_controlMutex;
 
-    unsigned int m_cameraIndex = 0;
     bool m_cameraAcquired = false;
     bool m_cameraStarted = false;
     SequenceType m_sequence = 0;
@@ -89,7 +92,7 @@ bool LCCamera::PImpl::openCamera()
         return false;
     }
 
-    m_camera = m_cameraManager.cameras()[m_cameraIndex];
+    m_camera = m_cameraManager.cameras()[cameraIndex];
     if (!m_camera) {
         qWarning() << "Couldn't find default camera";
         return false;
@@ -117,8 +120,8 @@ bool LCCamera::PImpl::configureCamera()
 
     auto &config = m_configuration->at(0);
     config.pixelFormat = formats::RGB888;
-    config.size.height = CAPTURE_HEIGHT;
-    config.size.width = CAPTURE_WIDTH;
+    config.size.height = captureHeight;
+    config.size.width = captureWidth;
     config.bufferCount = BUFFER_COUNT; // 6 buffers is better than 4
 
     if (m_configuration->validate() == CameraConfiguration::Invalid) {
@@ -304,7 +307,7 @@ void LCCamera::PImpl::requestComplete(Request *request)
         payload->framerate = NANOSEC_IN_SEC / (timestamp - m_lastTimestamp);
     m_lastTimestamp = timestamp;
 
-    Q_EMIT m_pubImpl->frameReady(payload);
+    Q_EMIT pubImpl->frameReady(payload);
 }
 
 void LCCamera::PImpl::queueRequest(Frame *frame)
@@ -345,9 +348,16 @@ void LCCamera::PImpl::queueRequest(Frame *frame)
 
 // ==== LCCamera ==============================================================
 
-LCCamera::LCCamera(unsigned int cameraIndex, QObject *parent)
-    : ICamera(parent), m_pimpl(make_unique<PImpl>(this, cameraIndex))
-{}
+LCCamera::LCCamera(unsigned int cameraIndex,
+                   unsigned int captureHeight,
+                   unsigned int captureWidth,
+                   QObject *parent)
+    : ICamera(parent), m_pimpl(make_unique<PImpl>(this))
+{
+    m_pimpl->cameraIndex = cameraIndex;
+    m_pimpl->captureHeight = captureHeight;
+    m_pimpl->captureWidth = captureWidth;
+}
 
 LCCamera::~LCCamera() {}
 

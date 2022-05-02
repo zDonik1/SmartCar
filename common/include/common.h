@@ -12,8 +12,6 @@
 constexpr auto PORT = 10100;
 
 constexpr auto ASPECT_RATIO = 4.f / 3.f;
-constexpr int CAPTURE_HEIGHT = 972;
-constexpr int CAPTURE_WIDTH = CAPTURE_HEIGHT * ASPECT_RATIO;
 constexpr int SCALED_IMAGE_HEIGHT = 180;
 constexpr int SCALED_IMAGE_WIDTH = SCALED_IMAGE_HEIGHT * ASPECT_RATIO;
 constexpr auto PIXEL_SIZE = 3; // bytes

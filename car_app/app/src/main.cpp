@@ -16,6 +16,8 @@ using namespace std;
 
 constexpr auto IP = "192.168.100.180";
 constexpr auto DEFAULT_CAMERA = 0;
+constexpr unsigned int CAPTURE_HEIGHT = 480;
+constexpr unsigned int CAPTURE_WIDTH = CAPTURE_HEIGHT * ASPECT_RATIO;
 
 int main(int argc, char *argv[])
 {
@@ -23,7 +25,7 @@ int main(int argc, char *argv[])
 
     QCoreApplication a(argc, argv);
 
-    auto camera = make_shared<LCCamera>(DEFAULT_CAMERA);
+    auto camera = make_shared<LCCamera>(DEFAULT_CAMERA, CAPTURE_HEIGHT, CAPTURE_WIDTH);
     auto processor = make_shared<ImageProcessor>();
     ImageSender sender(processor, QHostAddress{IP});
 
