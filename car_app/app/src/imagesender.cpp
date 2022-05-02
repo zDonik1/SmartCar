@@ -18,25 +18,12 @@
 using namespace std;
 using namespace cv;
 
-ImageSender::ImageSender(shared_ptr<ImageProcessor> imageProcessor,
-                         QHostAddress address,
+ImageSender::ImageSender(QHostAddress address,
                          QObject *parent)
-    : QObject(parent), m_address(address), m_imageProcessor(imageProcessor)
+    : IImageSender(parent), m_address(address)
 {
-    connect(&m_socket, &QAbstractSocket::stateChanged, this, [this, imageProcessor](auto state) {
+    connect(&m_socket, &QAbstractSocket::stateChanged, this, [this](auto state) {
         qDebug() << "Socket state changed:" << state;
-
-        if (m_socket.state() == QAbstractSocket::ConnectedState) {
-            connect(imageProcessor.get(),
-                    &ImageProcessor::frameReady,
-                    this,
-                    &ImageSender::sendFrame);
-        } else {
-            disconnect(imageProcessor.get(),
-                       &ImageProcessor::frameReady,
-                       this,
-                       &ImageSender::sendFrame);
-        }
     });
 
     connect(&m_socket, &QAbstractSocket::errorOccurred, this, [this] {
@@ -46,21 +33,32 @@ ImageSender::ImageSender(shared_ptr<ImageProcessor> imageProcessor,
 
 ImageSender::~ImageSender()
 {
-    stop();
+    ImageSender::stop();
 }
 
 void ImageSender::start()
 {
+    if (m_running)
+        return;
+
     m_socket.connectToHost(m_address, PORT);
+    m_running = true;
 }
 
 void ImageSender::stop()
 {
+    if (!m_running)
+        return;
+
     m_socket.disconnectFromHost();
+    m_running = false;
 }
 
 void ImageSender::sendFrame(FramePtr frame)
 {
+    if (!m_running || m_socket.state() != QAbstractSocket::ConnectedState)
+        return;
+
     if (frame->image.type() != CV_8UC3) {
         qWarning() << "Unknown format of image";
         return;

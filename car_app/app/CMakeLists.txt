@@ -14,6 +14,7 @@ set(SMART_CAR_TARGET smart_car_app)
 # ==== SOURCE FILES =========================================
 
 set(HEADERS
+    include/iimagesender.h
     include/imagesender.h
 )
 

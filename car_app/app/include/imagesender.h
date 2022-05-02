@@ -7,29 +7,25 @@
 
 #pragma once
 
-#include <QObject>
 #include <QUdpSocket>
 
-#include <imageprocessor.h>
+#include <iimagesender.h>
 
-class ImageSender : public QObject
+class ImageSender : public IImageSender
 {
-    Q_OBJECT
-
 public:
-    ImageSender(std::shared_ptr<ImageProcessor> imageProcessor,
-                QHostAddress address,
+    ImageSender(QHostAddress address,
                 QObject *parent = nullptr);
     virtual ~ImageSender();
 
-    void start();
-    void stop();
+    virtual void start() override;
+    virtual void stop() override;
 
-private slots:
-    void sendFrame(FramePtr frame);
+public slots:
+    virtual void sendFrame(FramePtr frame) override;
 
 private:
-    std::shared_ptr<ImageProcessor> m_imageProcessor;
     QHostAddress m_address;
     QUdpSocket m_socket;
+    bool m_running = false;
 };
