@@ -52,7 +52,7 @@ target_link_libraries(${CAMERA_TARGET}
     PUBLIC
         Qt${QT_VERSION_MAJOR}::Core
         ${OpenCV_LIBS}
-        common
+        utils
 
     PRIVATE
         PkgConfig::LIBCAMERA

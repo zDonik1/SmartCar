@@ -8,57 +8,51 @@
 
 # ==== CONFIGURATION =========================================
 
-set(PERIPHERALS_TARGET peripherals)
+set(SERVICES_TARGET services)
 
 
 # ==== SOURCE FILES =========================================
 
 set(HEADERS
-    include/motoractuator.h
-    include/ussensor.h
-    src/usworker.h
-    include/irsensor.h
+    include/imovement.h
+    include/movement.h
+    include/iusobstacledetector.h
+    include/usobstacledetector.h
+    include/iavoider.h
+    include/avoider.h
+    include/doublelinetracer.h
+    include/obstacleavoider.h
+    include/debugmovement.h
 )
 
 set(SOURCES
-    src/motoractuator.cpp
-    src/ussensor.cpp
-    src/usworker.cpp
-    src/irsensor.cpp
+    src/movement.cpp
+    src/usobstacledetector.cpp
+    src/avoider.cpp
+    src/doublelinetracer.cpp
+    src/obstacleavoider.cpp
+    src/debugmovement.cpp
 )
 
 
 # ==== FINDING PACKAGES =========================================
 
-# Qt
 find_package(QT NAMES Qt6 Qt5 COMPONENTS Core REQUIRED)
 find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Core REQUIRED)
-
-# wiringPi
-find_package(WiringPI REQUIRED)
-
-# OpenCV
-find_package(OpenCV REQUIRED)
 
 
 # ==== MAKING TARGET =========================================
 
-add_library(${PERIPHERALS_TARGET} ${HEADERS} ${SOURCES})
+add_library(${SERVICES_TARGET} ${HEADERS} ${SOURCES})
 
-target_link_libraries(${PERIPHERALS_TARGET}
+target_link_libraries(${SERVICES_TARGET}
     PUBLIC
         Qt${QT_VERSION_MAJOR}::Core
         iperipherals
-
-    PRIVATE
-        ${OpenCV_LIBS}
-        wiringPi
+        utils
 )
 
-target_include_directories(${PERIPHERALS_TARGET}
+target_include_directories(${SERVICES_TARGET}
     PUBLIC
         include
-
-    PRIVATE
-        ${OpenCV_INCLUDE_DIRS}
 )

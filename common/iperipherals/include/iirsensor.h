@@ -11,13 +11,12 @@
 
 #include <isensor.h>
 
-
 class IIRSensor : public QObject, public ISensor
 {
     Q_OBJECT
 
 public:
-    explicit IIRSensor(QObject *parent = nullptr) : QObject(parent) {}
+    explicit IIRSensor(QObject *parent = nullptr);
 
     virtual bool isBlocked() const = 0;
 

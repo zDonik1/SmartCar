@@ -54,6 +54,7 @@ add_compile_definitions(BEHAVIORS_PATH="${BEHAVIORS_PATH}")
 target_link_libraries(${SMART_CAR_TARGET}
     Qt${QT_VERSION_MAJOR}::Core
     Qt${QT_VERSION_MAJOR}::Network
+    peripherals
     behaviors
     camera
 )

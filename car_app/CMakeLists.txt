@@ -15,6 +15,5 @@ find_package(BehaviorTreeV3 REQUIRED)
 
 add_subdirectory(app)
 add_subdirectory(peripherals)
-add_subdirectory(services)
 add_subdirectory(behaviors)
 add_subdirectory(camera)
