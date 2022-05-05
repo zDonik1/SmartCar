@@ -9,27 +9,47 @@
 
 using namespace std;
 
-CommandReceiver::CommandReceiver(uint16_t port, QObject *parent) : ICommandReceiver(parent)
+CommandReceiver::CommandReceiver(uint16_t port, QObject *parent)
+    : ICommandReceiver(parent), m_port(port)
+{}
+
+void CommandReceiver::start()
 {
-    connect(&m_server, &QTcpServer::newConnection, this, [this, port] {
-        if (m_socket)
-            return;
+    if (m_running)
+        return;
 
-        m_socket = make_unique<QTcpSocket>(m_server.nextPendingConnection());
+    connect(&m_server, &QTcpServer::newConnection, this, &CommandReceiver::onNewConnection);
+    m_server.listen(QHostAddress::AnyIPv4, m_port);
+    m_running = true;
+}
 
-        connect(m_socket.get(), &QAbstractSocket::disconnected, this, [this, port] {
-            m_socket.reset();
-            m_server.listen(QHostAddress::AnyIPv4, port);
-            emit disconnected();
-        });
+void CommandReceiver::stop()
+{
+    if (!m_running)
+        return;
 
-        emit connected();
-    });
-
-    m_server.listen(QHostAddress::AnyIPv4, port);
+    disconnect(&m_server, &QTcpServer::newConnection, this, &CommandReceiver::onNewConnection);
+    m_socket->disconnectFromHost();
+    m_running = false;
 }
 
 QHostAddress CommandReceiver::host() const
 {
     return m_socket ? m_socket->peerAddress() : QHostAddress{};
+}
+
+void CommandReceiver::onNewConnection()
+{
+    if (m_socket || !m_running)
+        return;
+
+    m_socket = make_unique<QTcpSocket>(m_server.nextPendingConnection());
+
+    connect(m_socket.get(), &QAbstractSocket::disconnected, this, [this] {
+        m_socket.reset();
+        m_server.listen(QHostAddress::AnyIPv4, m_port);
+        emit disconnected();
+    });
+
+    emit connected();
 }

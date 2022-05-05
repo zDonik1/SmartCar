@@ -12,8 +12,8 @@
 
 #include <common.h>
 
-RMoveController::RMoveController(QHostAddress host, std::unique_ptr<IMovement> movement, QObject *parent)
-    : QObject(parent), m_host(host), m_movement(move(movement))
+RMoveController::RMoveController(std::shared_ptr<IMovement> movement, QObject *parent)
+    : QObject(parent), m_movement(movement)
 {
     connect(&m_socket, &QAbstractSocket::readyRead, this, &RMoveController::readMoveData);
 
@@ -32,7 +32,7 @@ bool RMoveController::start()
     if (m_running)
         return false;
 
-    if (m_socket.bind(QHostAddress::AnyIPv4, MOVE_PORT)) {
+    if (m_socket.bind(MOVE_PORT)) {
         qDebug() << "Socket bound to port" << MOVE_PORT;
         m_running = true;
         return true;
@@ -54,7 +54,7 @@ void RMoveController::stop()
 void RMoveController::readMoveData()
 {
     auto datagram = m_socket.receiveDatagram();
-    if (datagram.isNull() || datagram.senderAddress() != m_host)
+    if (datagram.isNull())
         return;
 
     auto buffer = datagram.data();

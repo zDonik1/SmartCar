@@ -14,6 +14,7 @@ find_package(BehaviorTreeV3 REQUIRED)
 # ==== SUBMODULES =========================================
 
 add_subdirectory(app)
+add_subdirectory(training_app)
 add_subdirectory(peripherals)
 add_subdirectory(behaviors)
 add_subdirectory(camera)

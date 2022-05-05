@@ -18,8 +18,11 @@ class IImageProcessor : public QObject
 public:
     explicit IImageProcessor(QObject *parent = nullptr) : QObject(parent) {}
 
-    virtual void start(std::shared_ptr<ICamera> camera) = 0;
+    virtual void start() = 0;
     virtual void stop() = 0;
+
+public Q_SLOTS:
+    virtual void processFrame(FramePtr frame) = 0;
 
 Q_SIGNALS:
     void frameReady(FramePtr frame);

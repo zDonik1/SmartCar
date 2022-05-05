@@ -17,9 +17,17 @@ class CommandReceiver : public ICommandReceiver
 public:
     explicit CommandReceiver(uint16_t port, QObject *parent = nullptr);
 
+    virtual void start() override;
+    virtual void stop() override;
+
     virtual QHostAddress host() const override;
+
+private slots:
+    void onNewConnection();
 
 private:
     QTcpServer m_server;
     std::unique_ptr<QTcpSocket> m_socket;
+    uint16_t m_port;
+    bool m_running = false;
 };

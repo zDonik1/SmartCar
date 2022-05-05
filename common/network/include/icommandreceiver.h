@@ -17,6 +17,9 @@ class ICommandReceiver : public QObject
 public:
     explicit ICommandReceiver(QObject *parent = nullptr) : QObject(parent) {}
 
+    virtual void start() = 0;
+    virtual void stop() = 0;
+
     virtual QHostAddress host() const = 0;
 
 signals:
