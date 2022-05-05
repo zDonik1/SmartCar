@@ -8,6 +8,9 @@
 #pragma once
 
 #include <QObject>
+#include <QHostAddress>
+
+#include <vector.h>
 
 class IImageReceiver : public QObject
 {
@@ -19,6 +22,9 @@ public:
     virtual bool start() = 0;
     virtual void stop() = 0;
 
+    virtual const QHostAddress &host() const = 0;
+
 signals:
     void receivedFrame(QImage frame);
+    void hostChanged();
 };

@@ -16,6 +16,7 @@
 #include <lccamera.h>
 #include <imageprocessor.h>
 #include <imagesender.h>
+#include <rmovecontroller.h>
 
 using namespace std;
 
@@ -48,24 +49,30 @@ int main(int argc, char *argv[])
 
     QCoreApplication a(argc, argv);
 
-    auto leftMotors = make_shared<MotorActuator>(MOTOR_LEFT_FORWARD_PIN, MOTOR_LEFT_BACKWARD_PIN);
-    auto rightMotors = make_shared<MotorActuator>(MOTOR_RIGHT_FORWARD_PIN, MOTOR_RIGHT_BACKWARD_PIN);
+    QHostAddress host{IP};
 
-    //    auto movement = make_unique<Movement>(move(leftMotors), move(rightMotors));
-    auto movement = make_shared<DebugMovement>();
+    auto leftMotors = make_unique<MotorActuator>(MOTOR_LEFT_FORWARD_PIN, MOTOR_LEFT_BACKWARD_PIN);
+    auto rightMotors = make_unique<MotorActuator>(MOTOR_RIGHT_FORWARD_PIN, MOTOR_RIGHT_BACKWARD_PIN);
+
+    auto movement = make_unique<Movement>(move(leftMotors), move(rightMotors));
+//        auto movement = make_unique<DebugMovement>();
 
     auto usSensor = make_shared<USSensor>(US_TRIGGER_PIN, US_ECHO_PIN);
 
+
     auto camera = make_shared<LCCamera>(DEFAULT_CAMERA, CAPTURE_HEIGHT, CAPTURE_WIDTH);
     ImageProcessor processor;
-    ImageSender sender(QHostAddress{IP});
+    ImageSender sender(host);
 
     QObject::connect(&processor, &IImageProcessor::frameReady, &sender, &IImageSender::sendFrame);
+
+
+    RMoveController moveController(host, move(movement));
 
     camera->start();
     processor.start(camera);
     sender.start();
-
+    moveController.start();
 
     return a.exec();
 }

@@ -18,6 +18,7 @@ set(HEADERS
     include/imagereceiver.h
     include/streampreview.h
     include/controller.h
+    include/remotemovement.h
 )
 
 set(SOURCES
@@ -25,6 +26,7 @@ set(SOURCES
     src/imagereceiver.cpp
     src/streampreview.cpp
     src/controller.cpp
+    src/remotemovement.cpp
 )
 
 set(RESOURCES

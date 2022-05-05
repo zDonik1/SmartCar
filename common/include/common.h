@@ -9,10 +9,11 @@
 
 #include <cstdint>
 
-constexpr auto PORT = 10100;
+constexpr uint16_t FRAME_PORT = 10100;
+constexpr uint16_t MOVE_PORT = FRAME_PORT + 1;
 
 constexpr auto ASPECT_RATIO = 4.f / 3.f;
-constexpr int SCALED_IMAGE_HEIGHT = 180;
+constexpr int SCALED_IMAGE_HEIGHT = 60;
 constexpr int SCALED_IMAGE_WIDTH = SCALED_IMAGE_HEIGHT * ASPECT_RATIO;
 constexpr auto PIXEL_SIZE = 3; // bytes
 
@@ -24,6 +25,6 @@ constexpr auto LINE_COUNT_SIZE = ROW_SIZE;
 constexpr auto HEADER_SIZE = SEQUENCE_SIZE + ROW_SIZE + LINE_COUNT_SIZE;
 constexpr auto LINE_SIZE = SCALED_IMAGE_WIDTH * PIXEL_SIZE;
 
-constexpr auto MAX_DATAGRAM_SIZE = 8192; // NOTE: an assumption
+constexpr auto MAX_DATAGRAM_SIZE = 2048;
 constexpr auto LINES_SENT = (MAX_DATAGRAM_SIZE - HEADER_SIZE) / LINE_SIZE;
 constexpr auto DATAGRAM_SIZE = HEADER_SIZE + LINE_SIZE * LINES_SENT;

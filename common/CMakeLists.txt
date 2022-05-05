@@ -14,8 +14,9 @@ set(COMMON_TARGET common)
 # ==== SOURCE FILES =========================================
 
 set(HEADERS
-    include/frame.h
     include/common.h
+    include/frame.h
+    include/vector.h
 )
 
 

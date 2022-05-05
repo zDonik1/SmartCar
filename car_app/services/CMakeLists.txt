@@ -22,7 +22,6 @@ set(HEADERS
     include/avoider.h
     include/doublelinetracer.h
     include/obstacleavoider.h
-    include/vector.h
     include/debugmovement.h
 )
 
@@ -50,6 +49,7 @@ target_link_libraries(${SERVICES_TARGET}
     PUBLIC
         Qt${QT_VERSION_MAJOR}::Core
         peripherals
+        common
 )
 
 target_include_directories(${SERVICES_TARGET}

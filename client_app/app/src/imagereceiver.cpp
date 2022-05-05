@@ -7,8 +7,6 @@
 
 #include <imagereceiver.h>
 
-#include <QHostAddress>
-
 #include <common.h>
 
 using namespace std;
@@ -23,28 +21,53 @@ ImageReceiver::ImageReceiver(QObject *parent)
     });
 }
 
+ImageReceiver::~ImageReceiver()
+{
+    ImageReceiver::stop();
+}
+
 bool ImageReceiver::start()
 {
-    if (m_socket.bind(QHostAddress::Any, PORT)) {
-        qDebug() << "Socket bound to" << m_socket.peerAddress() << "with port"
-                 << m_socket.peerPort();
-        m_timer.start();
-        return true;
-    } else {
-        qWarning() << "Couldn't bind to port" << PORT;
+    if (m_running)
         return false;
+
+    if (m_socket.bind(FRAME_PORT)) {
+        qDebug() << "Socket bound to port" << FRAME_PORT;
+        m_timer.start();
+        m_running = true;
+    } else {
+        qWarning() << "Couldn't bind to port" << FRAME_PORT;
     }
+    return m_running;
 }
 
 void ImageReceiver::stop()
 {
+    if (!m_running)
+        return;
+
     m_socket.disconnectFromHost();
+    m_running = false;
+}
+
+const QHostAddress &ImageReceiver::host() const
+{
+    return m_host;
 }
 
 void ImageReceiver::readFrames()
 {
     array<char, DATAGRAM_SIZE> buffer;
-    m_socket.readDatagram(buffer.data(), buffer.size());
+    bool hostInvalid = m_host.isNull();
+    if (m_socket.readDatagram(buffer.data(), buffer.size(), hostInvalid ? &m_host : nullptr) < 0) {
+        qWarning() << "Couldn't read datagram - discarded";
+        return;
+    }
+
+    if (hostInvalid) {
+        emit hostChanged();
+    }
+
     //    qDebug() << (m_bytesRead += DATAGRAM_SIZE) / m_timer.elapsed() << "bytes per ms";
 
     auto offsetPtr = buffer.data();
@@ -57,7 +80,7 @@ void ImageReceiver::readFrames()
 
     if (sequence > m_sequence) {
         emit receivedFrame(m_image);
-        qDebug() << "received frame" << m_sequence;
+//        qDebug() << "received frame" << m_sequence;
         m_sequence = sequence;
     }
 

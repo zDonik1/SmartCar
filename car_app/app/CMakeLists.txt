@@ -24,18 +24,20 @@ set(HEADERS
     include/controller.h
     include/iimagesender.h
     include/imagesender.h
+    src/imagesenderworker.h
+    include/rmovecontroller.h
 )
 
 set(SOURCES
     src/main.cpp
     src/controller.cpp
     src/imagesender.cpp
+    src/imagesenderworker.cpp
+    src/rmovecontroller.cpp
 )
-
 set(BEHAVIORS
     behaviors/test_do_once.xml
 )
-
 
 # ==== FINDING PACKAGES =========================================
 
@@ -60,6 +62,9 @@ target_link_libraries(${SMART_CAR_TARGET}
 target_include_directories(${SMART_CAR_TARGET}
     PUBLIC
         include
+
+    PRIVATE
+        src
 )
 
 
