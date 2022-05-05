@@ -16,7 +16,6 @@
 #include <behaviortree_cpp_v3/bt_factory.h>
 #include <behaviortree_cpp_v3/loggers/bt_cout_logger.h>
 
-#include <icontroller.h>
 #include <iussensor.h>
 #include <iirsensor.h>
 #include <imovement.h>
@@ -26,7 +25,7 @@
 #include <dooncemanager.h>
 
 
-class Controller : public QObject, public IController
+class Controller : public QObject
 {
     Q_OBJECT
 
@@ -46,11 +45,11 @@ public:
 
     virtual ~Controller() override;
 
-    virtual bool makeTreeFromFile(const std::string &filename) override;
-    virtual bool makeTreeFromText(const std::string &text) override;
+    bool makeTreeFromFile(const std::string &filename);
+    bool makeTreeFromText(const std::string &text);
 
-    virtual void start() override;
-    virtual void stop() override;
+    void start();
+    void stop();
 
     template<typename InputType>
     void addTreeConstant(const std::string &key, const InputType &constant)

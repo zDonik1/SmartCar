@@ -20,7 +20,6 @@ endif()
 # ==== SOURCE FILES =========================================
 
 set(HEADERS
-    include/icontroller.h
     include/controller.h
     include/iimagesender.h
     include/imagesender.h
