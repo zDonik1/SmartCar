@@ -21,7 +21,7 @@ class ImageSenderWorker : public QObject
     Q_OBJECT
 
 public:
-    explicit ImageSenderWorker(const QHostAddress &host, QObject *parent = nullptr);
+    explicit ImageSenderWorker(const QHostAddress &host, uint16_t port, QObject *parent = nullptr);
 
     void start();
     void stop();
@@ -34,6 +34,7 @@ private slots:
 
 private:
     QHostAddress m_host;
+    uint16_t m_port;
     QUdpSocket m_socket;
     atomic_bool m_running = false;
     mutex m_mutex;

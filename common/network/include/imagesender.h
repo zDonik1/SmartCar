@@ -17,7 +17,7 @@ class ImageSenderWorker;
 class ImageSender : public IImageSender
 {
 public:
-    ImageSender(QHostAddress host, QObject *parent = nullptr);
+    ImageSender(const QHostAddress &host, uint16_t port, QObject *parent = nullptr);
     virtual ~ImageSender() override;
 
     virtual void start() override;

@@ -9,8 +9,8 @@
 
 #include <imagesenderworker.h>
 
-ImageSender::ImageSender(QHostAddress host, QObject *parent)
-    : IImageSender(parent), m_worker(make_unique<ImageSenderWorker>(host))
+ImageSender::ImageSender(const QHostAddress &host, uint16_t port, QObject *parent)
+    : IImageSender(parent), m_worker(make_unique<ImageSenderWorker>(host, port))
 {
     m_worker->moveToThread(&m_thread);
 }

@@ -13,6 +13,7 @@
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/imgproc.hpp>
 
+#include <constants.h>
 #include <common.h>
 
 using namespace cv;
@@ -20,8 +21,8 @@ using namespace cv;
 // a bit of pause between datagrams to prevent network overloading in car
 constexpr auto DATAGRAM_TX_RATE = 1; // ms, 1000 / (DATAGRAMS_PER_FRAME * FPS)
 
-ImageSenderWorker::ImageSenderWorker(const QHostAddress &host, QObject *parent)
-    : QObject(parent), m_host(host)
+ImageSenderWorker::ImageSenderWorker(const QHostAddress &host, uint16_t port, QObject *parent)
+    : QObject(parent), m_host(host), m_port(port)
 {
     connect(this, &ImageSenderWorker::sendFrame, this, &ImageSenderWorker::onSendFrame);
 
@@ -39,7 +40,7 @@ void ImageSenderWorker::start()
         return;
 
     lock_guard<mutex> socketLock(m_mutex);
-    m_socket.connectToHost(m_host, FRAME_PORT);
+    m_socket.connectToHost(m_host, m_port);
     m_running = true;
 }
 
@@ -67,7 +68,7 @@ void ImageSenderWorker::onSendFrame(FramePtr frame)
     Mat mat(SCALED_IMAGE_HEIGHT, SCALED_IMAGE_WIDTH, CV_8UC3);
     resize(frame->image, mat, mat.size(), 0, 0, INTER_NEAREST);
 
-    array<char, DATAGRAM_SIZE> buffer;
+    array<char, datagramSize(SCALED_IMAGE_WIDTH)> buffer;
     auto lineCount = 0;
     auto offsetPtr = buffer.data();
     for (RowType i = 0; i < mat.rows; ++i) {
@@ -78,11 +79,11 @@ void ImageSenderWorker::onSendFrame(FramePtr frame)
             offsetPtr += ROW_SIZE + LINE_COUNT_SIZE;
         }
 
-        memcpy(offsetPtr, mat.row(i).data, LINE_SIZE);
-        offsetPtr += LINE_SIZE;
+        memcpy(offsetPtr, mat.row(i).data, lineSize(SCALED_IMAGE_WIDTH));
+        offsetPtr += lineSize(SCALED_IMAGE_WIDTH);
         ++lineCount;
 
-        if (lineCount == LINES_SENT || i == mat.rows - 1) {
+        if (lineCount == linesSent(SCALED_IMAGE_WIDTH) || i == mat.rows - 1) {
             memcpy(buffer.data() + SEQUENCE_SIZE + ROW_SIZE,
                    reinterpret_cast<char *>(&lineCount),
                    ROW_SIZE);

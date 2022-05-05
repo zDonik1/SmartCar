@@ -21,6 +21,7 @@ set(HEADERS
     src/imagesenderworker.h
     include/remotemovement.h
     include/rmovecontroller.h
+    src/constants.h
 )
 
 set(SOURCES

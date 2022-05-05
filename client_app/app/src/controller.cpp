@@ -31,7 +31,7 @@ Controller::Controller(QObject *parent)
 
     connect(&m_timer, &QTimer::timeout, this, [this] { m_movement->move(m_vector); });
 
-    m_imageReceiver.start();
+    m_imageReceiver.start(FRAME_PORT);
 }
 
 void Controller::setStreamPreview(StreamPreview *preview)

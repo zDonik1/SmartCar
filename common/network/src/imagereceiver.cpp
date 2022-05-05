@@ -7,6 +7,7 @@
 
 #include <imagereceiver.h>
 
+#include <constants.h>
 #include <common.h>
 
 using namespace std;
@@ -26,17 +27,14 @@ ImageReceiver::~ImageReceiver()
     ImageReceiver::stop();
 }
 
-bool ImageReceiver::start()
+bool ImageReceiver::start(uint16_t port)
 {
     if (m_running)
         return false;
 
-    if (m_socket.bind(FRAME_PORT)) {
-        qDebug() << "Socket bound to port" << FRAME_PORT;
+    if (m_socket.bind(port)) {
         m_timer.start();
         m_running = true;
-    } else {
-        qWarning() << "Couldn't bind to port" << FRAME_PORT;
     }
     return m_running;
 }
@@ -57,7 +55,7 @@ const QHostAddress &ImageReceiver::host() const
 
 void ImageReceiver::readFrames()
 {
-    array<char, DATAGRAM_SIZE> buffer;
+    array<char, datagramSize(SCALED_IMAGE_WIDTH)> buffer;
     bool hostInvalid = m_host.isNull();
     if (m_socket.readDatagram(buffer.data(), buffer.size(), hostInvalid ? &m_host : nullptr) < 0) {
         qWarning() << "Couldn't read datagram - discarded";
@@ -93,13 +91,13 @@ void ImageReceiver::readFrames()
 
     auto lineCount = *reinterpret_cast<RowType *>(offsetPtr);
     offsetPtr += LINE_COUNT_SIZE;
-    if (lineCount > LINES_SENT) {
+    if (lineCount > linesSent(SCALED_IMAGE_WIDTH)) {
         qWarning() << "Invalid line count" << lineCount << "Dropping line";
         return;
     }
 
     for (auto i = 0; i < lineCount; ++i) {
-        memcpy(m_image.scanLine(row + i), offsetPtr, LINE_SIZE);
-        offsetPtr += LINE_SIZE;
+        memcpy(m_image.scanLine(row + i), offsetPtr, lineSize(SCALED_IMAGE_WIDTH));
+        offsetPtr += lineSize(SCALED_IMAGE_WIDTH);
     }
 }

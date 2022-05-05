@@ -19,7 +19,7 @@ public:
     explicit ImageReceiver(QObject *parent = nullptr);
     virtual ~ImageReceiver() override;
 
-    virtual bool start() override;
+    virtual bool start(uint16_t port) override;
     virtual void stop() override;
 
     virtual const QHostAddress &host() const override;
