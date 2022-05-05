@@ -11,13 +11,12 @@
 
 #include <isensor.h>
 
-
 class IUSSensor : public QObject, public ISensor
 {
     Q_OBJECT
 
 public:
-    explicit IUSSensor(QObject *parent = nullptr) : QObject(parent) {}
+    explicit IUSSensor(QObject *parent = nullptr);
 
     virtual float distance() const = 0;
 

@@ -74,7 +74,7 @@ private:
 
     bool m_cameraAcquired = false;
     bool m_cameraStarted = false;
-    SequenceType m_sequence = 0;
+    uint64_t m_sequence = 0;
     uint64_t m_lastTimestamp;
 };
 

@@ -1,7 +1,7 @@
 /**************************************************************************
  *
  *   @author Doniyorbek Tokhirov <tokhirovdoniyor@gmail.com>
- *   @date 27/04/2022
+ *   @date 05/05/2022
  *
  *************************************************************************/
 
@@ -9,21 +9,28 @@
 
 #include <cstdint>
 
-constexpr auto PORT = 10100;
-
-constexpr auto ASPECT_RATIO = 4.f / 3.f;
-constexpr int SCALED_IMAGE_HEIGHT = 180;
-constexpr int SCALED_IMAGE_WIDTH = SCALED_IMAGE_HEIGHT * ASPECT_RATIO;
-constexpr auto PIXEL_SIZE = 3; // bytes
-
 using SequenceType = uint64_t;
 using RowType = uint16_t;
 constexpr auto SEQUENCE_SIZE = sizeof(SequenceType);
 constexpr auto ROW_SIZE = sizeof(RowType);
 constexpr auto LINE_COUNT_SIZE = ROW_SIZE;
 constexpr auto HEADER_SIZE = SEQUENCE_SIZE + ROW_SIZE + LINE_COUNT_SIZE;
-constexpr auto LINE_SIZE = SCALED_IMAGE_WIDTH * PIXEL_SIZE;
 
-constexpr auto MAX_DATAGRAM_SIZE = 8192; // NOTE: an assumption
-constexpr auto LINES_SENT = (MAX_DATAGRAM_SIZE - HEADER_SIZE) / LINE_SIZE;
-constexpr auto DATAGRAM_SIZE = HEADER_SIZE + LINE_SIZE * LINES_SENT;
+constexpr auto MAX_DATAGRAM_SIZE = 2048; // bytes
+constexpr unsigned int PIXEL_SIZE = 3; // bytes
+
+
+constexpr auto lineSize(unsigned int imageWidth)
+{
+    return imageWidth * PIXEL_SIZE;
+}
+
+constexpr auto linesSent(unsigned int imageWidth)
+{
+    return (MAX_DATAGRAM_SIZE - HEADER_SIZE) / lineSize(imageWidth);
+}
+
+constexpr auto datagramSize(unsigned int imageWidth)
+{
+    return HEADER_SIZE + lineSize(imageWidth) * linesSent(imageWidth);
+}

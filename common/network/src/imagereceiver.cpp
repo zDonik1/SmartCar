@@ -7,8 +7,7 @@
 
 #include <imagereceiver.h>
 
-#include <QHostAddress>
-
+#include <constants.h>
 #include <common.h>
 
 using namespace std;
@@ -23,28 +22,50 @@ ImageReceiver::ImageReceiver(QObject *parent)
     });
 }
 
-bool ImageReceiver::start()
+ImageReceiver::~ImageReceiver()
 {
-    if (m_socket.bind(QHostAddress::Any, PORT)) {
-        qDebug() << "Socket bound to" << m_socket.peerAddress() << "with port"
-                 << m_socket.peerPort();
-        m_timer.start();
-        return true;
-    } else {
-        qWarning() << "Couldn't bind to port" << PORT;
+    ImageReceiver::stop();
+}
+
+bool ImageReceiver::start(uint16_t port)
+{
+    if (m_running)
         return false;
+
+    if (m_socket.bind(port)) {
+        m_timer.start();
+        m_running = true;
     }
+    return m_running;
 }
 
 void ImageReceiver::stop()
 {
+    if (!m_running)
+        return;
+
     m_socket.disconnectFromHost();
+    m_running = false;
+}
+
+const QHostAddress &ImageReceiver::host() const
+{
+    return m_host;
 }
 
 void ImageReceiver::readFrames()
 {
-    array<char, DATAGRAM_SIZE> buffer;
-    m_socket.readDatagram(buffer.data(), buffer.size());
+    array<char, datagramSize(SCALED_IMAGE_WIDTH)> buffer;
+    bool hostInvalid = m_host.isNull();
+    if (m_socket.readDatagram(buffer.data(), buffer.size(), hostInvalid ? &m_host : nullptr) < 0) {
+        qWarning() << "Couldn't read datagram - discarded";
+        return;
+    }
+
+    if (hostInvalid) {
+        emit hostChanged();
+    }
+
     //    qDebug() << (m_bytesRead += DATAGRAM_SIZE) / m_timer.elapsed() << "bytes per ms";
 
     auto offsetPtr = buffer.data();
@@ -57,7 +78,7 @@ void ImageReceiver::readFrames()
 
     if (sequence > m_sequence) {
         emit receivedFrame(m_image);
-        qDebug() << "received frame" << m_sequence;
+//        qDebug() << "received frame" << m_sequence;
         m_sequence = sequence;
     }
 
@@ -70,13 +91,13 @@ void ImageReceiver::readFrames()
 
     auto lineCount = *reinterpret_cast<RowType *>(offsetPtr);
     offsetPtr += LINE_COUNT_SIZE;
-    if (lineCount > LINES_SENT) {
+    if (lineCount > linesSent(SCALED_IMAGE_WIDTH)) {
         qWarning() << "Invalid line count" << lineCount << "Dropping line";
         return;
     }
 
     for (auto i = 0; i < lineCount; ++i) {
-        memcpy(m_image.scanLine(row + i), offsetPtr, LINE_SIZE);
-        offsetPtr += LINE_SIZE;
+        memcpy(m_image.scanLine(row + i), offsetPtr, lineSize(SCALED_IMAGE_WIDTH));
+        offsetPtr += lineSize(SCALED_IMAGE_WIDTH);
     }
 }

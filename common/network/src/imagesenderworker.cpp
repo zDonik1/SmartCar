@@ -1,61 +1,62 @@
 /**************************************************************************
  *
  *   @author Doniyorbek Tokhirov <tokhirovdoniyor@gmail.com>
- *   @date 26/04/2022
+ *   @date 04/05/2022
  *
  *************************************************************************/
 
-#include <imagesender.h>
+#include <imagesenderworker.h>
 
-#include <QHostAddress>
-#include <QTimer>
+#include <QDebug>
+#include <QThread>
 
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/imgproc.hpp>
 
+#include <constants.h>
 #include <common.h>
 
-using namespace std;
 using namespace cv;
 
-ImageSender::ImageSender(QHostAddress address,
-                         QObject *parent)
-    : IImageSender(parent), m_address(address)
-{
-    connect(&m_socket, &QAbstractSocket::stateChanged, this, [this](auto state) {
-        qDebug() << "Socket state changed:" << state;
-    });
+// a bit of pause between datagrams to prevent network overloading in car
+constexpr auto DATAGRAM_TX_RATE = 1; // ms, 1000 / (DATAGRAMS_PER_FRAME * FPS)
 
-    connect(&m_socket, &QAbstractSocket::errorOccurred, this, [this] {
-        qDebug() << m_socket.error();
-    });
+ImageSenderWorker::ImageSenderWorker(const QHostAddress &host, uint16_t port, QObject *parent)
+    : QObject(parent), m_host(host), m_port(port)
+{
+    connect(this, &ImageSenderWorker::sendFrame, this, &ImageSenderWorker::onSendFrame);
+
+    connect(
+        &m_socket,
+        &QAbstractSocket::stateChanged,
+        this,
+        [this](auto state) { qDebug() << "Socket state changed:" << state; },
+        Qt::DirectConnection);
 }
 
-ImageSender::~ImageSender()
-{
-    ImageSender::stop();
-}
-
-void ImageSender::start()
+void ImageSenderWorker::start()
 {
     if (m_running)
         return;
 
-    m_socket.connectToHost(m_address, PORT);
+    lock_guard<mutex> socketLock(m_mutex);
+    m_socket.connectToHost(m_host, m_port);
     m_running = true;
 }
 
-void ImageSender::stop()
+void ImageSenderWorker::stop()
 {
     if (!m_running)
         return;
 
+    lock_guard<mutex> socketLock(m_mutex);
     m_socket.disconnectFromHost();
     m_running = false;
 }
 
-void ImageSender::sendFrame(FramePtr frame)
+void ImageSenderWorker::onSendFrame(FramePtr frame)
 {
+    lock_guard<mutex> lock(m_mutex);
     if (!m_running || m_socket.state() != QAbstractSocket::ConnectedState)
         return;
 
@@ -67,7 +68,7 @@ void ImageSender::sendFrame(FramePtr frame)
     Mat mat(SCALED_IMAGE_HEIGHT, SCALED_IMAGE_WIDTH, CV_8UC3);
     resize(frame->image, mat, mat.size(), 0, 0, INTER_NEAREST);
 
-    array<char, DATAGRAM_SIZE> buffer;
+    array<char, datagramSize(SCALED_IMAGE_WIDTH)> buffer;
     auto lineCount = 0;
     auto offsetPtr = buffer.data();
     for (RowType i = 0; i < mat.rows; ++i) {
@@ -78,20 +79,21 @@ void ImageSender::sendFrame(FramePtr frame)
             offsetPtr += ROW_SIZE + LINE_COUNT_SIZE;
         }
 
-        memcpy(offsetPtr, mat.row(i).data, LINE_SIZE);
-        offsetPtr += LINE_SIZE;
+        memcpy(offsetPtr, mat.row(i).data, lineSize(SCALED_IMAGE_WIDTH));
+        offsetPtr += lineSize(SCALED_IMAGE_WIDTH);
         ++lineCount;
 
-        if (lineCount == LINES_SENT || i == mat.rows - 1) {
+        if (lineCount == linesSent(SCALED_IMAGE_WIDTH) || i == mat.rows - 1) {
             memcpy(buffer.data() + SEQUENCE_SIZE + ROW_SIZE,
                    reinterpret_cast<char *>(&lineCount),
                    ROW_SIZE);
-            while (m_socket.write(buffer.data(), buffer.size()) < 0) {
-                qWarning() << "Retrying sending line due to" << m_socket.error();
+
+            if (m_socket.write(buffer.data(), buffer.size()) < 0) {
+                qWarning() << "Failed to send datagram:" << m_socket.errorString();
             }
             lineCount = 0;
             offsetPtr = buffer.data();
+            QThread::msleep(DATAGRAM_TX_RATE);
         }
     }
-    qDebug() << "Sent frame" << frame->sequence << ", fps:" << frame->framerate;
 }

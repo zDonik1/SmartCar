@@ -8,51 +8,41 @@
 
 # ==== CONFIGURATION =========================================
 
-set(SERVICES_TARGET services)
+set(IPERIPHERALS_TARGET iperipherals)
 
 
 # ==== SOURCE FILES =========================================
 
 set(HEADERS
-    include/imovement.h
-    include/movement.h
-    include/iusobstacledetector.h
-    include/usobstacledetector.h
-    include/iavoider.h
-    include/avoider.h
-    include/doublelinetracer.h
-    include/obstacleavoider.h
-    include/vector.h
-    include/debugmovement.h
+    include/imotoractuator.h
+    include/isensor.h
+    include/iussensor.h
+    include/iirsensor.h
 )
 
 set(SOURCES
-    src/movement.cpp
-    src/usobstacledetector.cpp
-    src/avoider.cpp
-    src/doublelinetracer.cpp
-    src/obstacleavoider.cpp
-    src/debugmovement.cpp
+    src/iussensor.cpp
+    src/iirsensor.cpp
 )
 
 
 # ==== FINDING PACKAGES =========================================
 
+# Qt
 find_package(QT NAMES Qt6 Qt5 COMPONENTS Core REQUIRED)
 find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Core REQUIRED)
 
 
 # ==== MAKING TARGET =========================================
 
-add_library(${SERVICES_TARGET} ${HEADERS} ${SOURCES})
+add_library(${IPERIPHERALS_TARGET} ${HEADERS} ${SOURCES})
 
-target_link_libraries(${SERVICES_TARGET}
+target_link_libraries(${IPERIPHERALS_TARGET}
     PUBLIC
         Qt${QT_VERSION_MAJOR}::Core
-        peripherals
 )
 
-target_include_directories(${SERVICES_TARGET}
+target_include_directories(${IPERIPHERALS_TARGET}
     PUBLIC
         include
 )

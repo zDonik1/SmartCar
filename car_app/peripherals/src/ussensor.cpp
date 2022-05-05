@@ -17,8 +17,8 @@ using namespace std;
 
 
 USSensor::USSensor(int trigPinN, int echoPinN, QObject *parent)
-    : IUSSensor(parent)
-    , m_worker(make_unique<USWorker>(trigPinN, echoPinN))
+//    : IUSSensor(parent)
+    : m_worker(make_unique<USWorker>(trigPinN, echoPinN))
 {
     if (wiringPiSetup() < 0) {
         qWarning() << "Wiring PI was not set up!";

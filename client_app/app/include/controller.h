@@ -7,8 +7,11 @@
 
 #pragma once
 
+#include <QTimer>
+
 #include <streampreview.h>
 #include <imagereceiver.h>
+#include <remotemovement.h>
 
 class Controller : public QObject
 {
@@ -16,11 +19,18 @@ class Controller : public QObject
 
 public:
     explicit Controller(QObject *parent = nullptr);
-    virtual ~Controller();
 
     Q_INVOKABLE void setStreamPreview(StreamPreview *preview);
+    Q_INVOKABLE void onKeyPressed(Qt::Key key);
+    Q_INVOKABLE void onKeyReleased(Qt::Key key);
+
+private:
+    Vector vectorFromKeyboard();
 
 private:
     StreamPreview *m_preview = nullptr;
-    ImageReceiver m_receiver;
+    ImageReceiver m_imageReceiver;
+    std::unique_ptr<RemoteMovement> m_movement;
+    QTimer m_timer;
+    Vector m_vector;
 };

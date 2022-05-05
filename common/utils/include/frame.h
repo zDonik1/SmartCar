@@ -9,8 +9,6 @@
 
 #include <opencv2/core/mat.hpp>
 
-#include <common.h>
-
 struct Frame
 {
     Frame() = default;
@@ -18,7 +16,7 @@ struct Frame
 
 public:
     cv::Mat image;
-    SequenceType sequence = 0;
+    uint64_t sequence = 0;
     float framerate = 0;
 };
 

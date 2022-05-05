@@ -8,6 +8,10 @@
 #pragma once
 
 #include <QObject>
+#include <QHostAddress>
+#include <QImage>
+
+#include <vector.h>
 
 class IImageReceiver : public QObject
 {
@@ -16,9 +20,12 @@ class IImageReceiver : public QObject
 public:
     explicit IImageReceiver(QObject *parent = nullptr) : QObject(parent) {}
 
-    virtual bool start() = 0;
+    virtual bool start(uint16_t port) = 0;
     virtual void stop() = 0;
+
+    virtual const QHostAddress &host() const = 0;
 
 signals:
     void receivedFrame(QImage frame);
+    void hostChanged();
 };
