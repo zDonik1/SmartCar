@@ -10,3 +10,4 @@
 add_subdirectory(utils)
 add_subdirectory(services)
 add_subdirectory(iperipherals)
+add_subdirectory(network)

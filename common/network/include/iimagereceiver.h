@@ -9,6 +9,7 @@
 
 #include <QObject>
 #include <QHostAddress>
+#include <QImage>
 
 #include <vector.h>
 

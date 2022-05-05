@@ -21,19 +21,13 @@ endif()
 
 set(HEADERS
     include/controller.h
-    include/iimagesender.h
-    include/imagesender.h
-    src/imagesenderworker.h
-    include/rmovecontroller.h
 )
 
 set(SOURCES
     src/main.cpp
     src/controller.cpp
-    src/imagesender.cpp
-    src/imagesenderworker.cpp
-    src/rmovecontroller.cpp
 )
+
 set(BEHAVIORS
     behaviors/test_do_once.xml
 )
@@ -41,8 +35,8 @@ set(BEHAVIORS
 # ==== FINDING PACKAGES =========================================
 
 # Qt
-find_package(QT NAMES Qt6 Qt5 COMPONENTS Core Network REQUIRED)
-find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Core Network REQUIRED)
+find_package(QT NAMES Qt6 Qt5 COMPONENTS Core REQUIRED)
+find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Core REQUIRED)
 
 
 # ==== MAKING TARGET =========================================
@@ -53,10 +47,10 @@ add_compile_definitions(BEHAVIORS_PATH="${BEHAVIORS_PATH}")
 
 target_link_libraries(${SMART_CAR_TARGET}
     Qt${QT_VERSION_MAJOR}::Core
-    Qt${QT_VERSION_MAJOR}::Network
     peripherals
     behaviors
     camera
+    network
 )
 
 target_include_directories(${SMART_CAR_TARGET}

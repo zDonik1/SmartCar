@@ -9,7 +9,6 @@
 
 #include <QObject>
 #include <QUdpSocket>
-#include <QImage>
 #include <QElapsedTimer>
 
 #include <iimagereceiver.h>
