@@ -15,7 +15,6 @@
 #include <usobstacledetector.h>
 #include <lccamera.h>
 #include <imageprocessor.h>
-#include <imagesender.h>
 #include <rmovecontroller.h>
 #include <common.h>
 
@@ -63,16 +62,11 @@ int main(int argc, char *argv[])
 
     auto camera = make_shared<LCCamera>(DEFAULT_CAMERA, CAPTURE_HEIGHT, CAPTURE_WIDTH);
     ImageProcessor processor;
-    ImageSender sender(host, FRAME_PORT);
-
-    QObject::connect(&processor, &IImageProcessor::frameReady, &sender, &IImageSender::sendFrame);
-
 
     RMoveController moveController(host, move(movement));
 
     camera->start();
     processor.start(camera);
-    sender.start();
     moveController.start();
 
     return a.exec();

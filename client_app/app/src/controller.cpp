@@ -18,20 +18,7 @@ constexpr auto INPUT_UPDATE_RATE = 50; // ms
 Controller::Controller(QObject *parent)
     : QObject{parent}
 {
-    connect(&m_imageReceiver, &ImageReceiver::receivedFrame, this, [this](QImage frame) {
-        if (m_preview) {
-            m_preview->setNewImage(frame);
-        }
-    });
-
-    connect(&m_imageReceiver, &ImageReceiver::hostChanged, this, [this] {
-        m_movement = make_unique<RemoteMovement>(m_imageReceiver.host());
-        m_timer.start(INPUT_UPDATE_RATE);
-    });
-
     connect(&m_timer, &QTimer::timeout, this, [this] { m_movement->move(m_vector); });
-
-    m_imageReceiver.start(FRAME_PORT);
 }
 
 void Controller::setStreamPreview(StreamPreview *preview)
