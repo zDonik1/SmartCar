@@ -10,21 +10,18 @@
 #include <QUdpSocket>
 #include <QHostAddress>
 
-#include <vector.h>
+#include <imovement.h>
 
-class RemoteMovement : public QObject
+class RemoteMovement : public QObject, public IMovement
 {
 public:
-    RemoteMovement();
+    RemoteMovement(const QHostAddress &host);
     virtual ~RemoteMovement() override;
 
-    void start(const QHostAddress &host);
-    void stop();
-
-    void move(Vector vector);
+    virtual void move(Vector vector) override;
+    virtual void stop() override;
 
 private:
     QUdpSocket m_socket;
-    bool m_running = false;
     quint64 m_sequence = 0;
 };

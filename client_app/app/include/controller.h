@@ -30,7 +30,7 @@ private:
 private:
     StreamPreview *m_preview = nullptr;
     ImageReceiver m_imageReceiver;
-    RemoteMovement m_movement;
+    std::unique_ptr<RemoteMovement> m_movement;
     QTimer m_timer;
     Vector m_vector;
 };

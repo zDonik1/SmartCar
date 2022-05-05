@@ -25,11 +25,11 @@ Controller::Controller(QObject *parent)
     });
 
     connect(&m_imageReceiver, &ImageReceiver::hostChanged, this, [this] {
-        m_movement.start(m_imageReceiver.host());
+        m_movement = make_unique<RemoteMovement>(m_imageReceiver.host());
         m_timer.start(INPUT_UPDATE_RATE);
     });
 
-    connect(&m_timer, &QTimer::timeout, this, [this] { m_movement.move(m_vector); });
+    connect(&m_timer, &QTimer::timeout, this, [this] { m_movement->move(m_vector); });
 
     m_imageReceiver.start();
 }

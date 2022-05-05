@@ -11,41 +11,27 @@
 
 #include <common.h>
 
-RemoteMovement::RemoteMovement()
+RemoteMovement::RemoteMovement(const QHostAddress &host)
 {
     connect(&m_socket, &QAbstractSocket::stateChanged, this, [this](auto state) {
         qDebug() << "Socket state changed:" << state;
     });
+
+    m_socket.connectToHost(host, MOVE_PORT);
 }
 
 RemoteMovement::~RemoteMovement()
 {
-    stop();
-}
-
-void RemoteMovement::start(const QHostAddress &host)
-{
-    if (m_running)
-        return;
-
-    m_socket.connectToHost(host, MOVE_PORT);
-    m_running = true;
+    m_socket.disconnectFromHost();
 }
 
 void RemoteMovement::stop()
 {
-    if (!m_running)
-        return;
-
-    m_socket.disconnectFromHost();
-    m_running = false;
+    move({0, 0});
 }
 
 void RemoteMovement::move(Vector vector)
 {
-    if (!m_running)
-        return;
-
     QByteArray buffer;
     QDataStream stream(&buffer, QIODevice::WriteOnly);
     stream << vector.x << vector.y << m_sequence++;

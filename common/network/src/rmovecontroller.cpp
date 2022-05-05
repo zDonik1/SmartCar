@@ -60,7 +60,7 @@ void RMoveController::readMoveData()
     auto buffer = datagram.data();
     QDataStream stream(&buffer, QIODevice::ReadOnly);
     Vector vector;
-    uint64_t sequence;
+    quint64 sequence;
     stream >> vector.x >> vector.y >> sequence;
     if (sequence > m_lastSequence) {
         m_movement->move(vector);
