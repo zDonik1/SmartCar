@@ -22,6 +22,10 @@ set(HEADERS
     include/remotemovement.h
     include/rmovecontroller.h
     src/constants.h
+    include/icommander.h
+    include/commander.h
+    include/icommandreceiver.h
+    include/commandreceiver.h
 )
 
 set(SOURCES
@@ -30,8 +34,9 @@ set(SOURCES
     src/imagesenderworker.cpp
     src/remotemovement.cpp
     src/rmovecontroller.cpp
+    src/commander.cpp
+    src/commandreceiver.cpp
 )
-
 
 # ==== FINDING PACKAGES =========================================
 
