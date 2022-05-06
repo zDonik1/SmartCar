@@ -25,7 +25,7 @@ public:
     virtual void requestReading() override;
     virtual bool isBlocked() const override;
 
-private slots:
+private Q_SLOTS:
     void updateIsBlocked();
 
 private:

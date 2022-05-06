@@ -61,21 +61,23 @@ ImageProcessor::~ImageProcessor()
     m_processThread.wait();
 }
 
-void ImageProcessor::start(std::shared_ptr<ICamera> camera)
+void ImageProcessor::start()
 {
     if (m_processThread.isRunning())
         return;
-
-    m_camera = camera;
-    connect(m_camera.get(), &ICamera::frameReady, this, [this](auto frame) {
-        m_processThread.enqueueFrame(frame);
-    });
 
     m_processThread.start();
 }
 
 void ImageProcessor::stop()
 {
-    m_camera.reset();
     m_processThread.stop();
+}
+
+void ImageProcessor::processFrame(FramePtr frame)
+{
+    if (!m_processThread.isRunning())
+        return;
+
+    m_processThread.enqueueFrame(frame);
 }

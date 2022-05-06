@@ -20,6 +20,6 @@ public:
 
     virtual bool isBlocked() const = 0;
 
-signals:
+Q_SIGNALS:
     void isBlockedChanged();
 };

@@ -17,6 +17,7 @@ set(HEADERS
     include/common.h
     include/frame.h
     include/vector.h
+    include/utilities.h
 )
 
 

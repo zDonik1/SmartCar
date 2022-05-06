@@ -71,7 +71,7 @@ void IRSensor::setIsBlocked(bool isBlocked)
 {
     if (m_isBlocked != isBlocked) {
         m_isBlocked = isBlocked;
-        emit isBlockedChanged();
+        Q_EMIT isBlockedChanged();
     }
 }
 

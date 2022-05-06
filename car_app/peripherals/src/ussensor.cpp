@@ -32,7 +32,7 @@ USSensor::USSensor(int trigPinN, int echoPinN, QObject *parent)
 
     connect(m_worker.get(), &USWorker::distanceReady, this, [this](float distance) {
         m_distance = distance;
-        emit distanceChanged();
+        Q_EMIT distanceChanged();
     });
 }
 

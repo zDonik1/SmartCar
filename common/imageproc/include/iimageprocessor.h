@@ -9,7 +9,7 @@
 
 #include <QObject>
 
-#include <icamera.h>
+#include <frame.h>
 
 class IImageProcessor : public QObject
 {
@@ -18,9 +18,12 @@ class IImageProcessor : public QObject
 public:
     explicit IImageProcessor(QObject *parent = nullptr) : QObject(parent) {}
 
-    virtual void start(std::shared_ptr<ICamera> camera) = 0;
+    virtual void start() = 0;
     virtual void stop() = 0;
 
-Q_SIGNALS:
+public slots:
+    virtual void processFrame(FramePtr frame) = 0;
+
+signals:
     void frameReady(FramePtr frame);
 };

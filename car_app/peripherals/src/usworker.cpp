@@ -36,7 +36,7 @@ void USWorker::start(int updateInterval)
 {
     m_isRunning.store(true);
     m_updateInterval = updateInterval;
-    emit startAsync();
+    Q_EMIT startAsync();
 }
 
 void USWorker::stop()
@@ -46,7 +46,7 @@ void USWorker::stop()
 
 void USWorker::requestDistance()
 {
-    emit requestDistanceSignal();
+    Q_EMIT requestDistanceSignal();
 }
 
 std::pair<float, bool> USWorker::calculateDistance()
@@ -78,7 +78,7 @@ void USWorker::findDistanceOnce()
 {
     auto [distance, success] = calculateDistance();
     if (success) {
-        emit distanceReady(distance);
+        Q_EMIT distanceReady(distance);
     }
 }
 

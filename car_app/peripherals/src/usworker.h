@@ -21,12 +21,12 @@ public:
     void stop();
     void requestDistance();
 
-signals:
+Q_SIGNALS:
     void distanceReady(float distance, QPrivateSignal = {});
     void startAsync(QPrivateSignal = {});
     void requestDistanceSignal(QPrivateSignal = {});
 
-private slots:
+private Q_SLOTS:
     void findDistanceOnce();
     void findDistanceContinuous();
 

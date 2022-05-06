@@ -8,13 +8,7 @@
 
 # ==== CONFIGURATION =========================================
 
-set(SMART_CAR_TARGET smart_car_app)
-
-if (${CMAKE_CROSSCOMPILING})
-    set(BEHAVIORS_PATH "/tmp/behaviors/")
-else()
-    set(BEHAVIORS_PATH "${CMAKE_CURRENT_BINARY_DIR}/behaviors/")
-endif()
+set(CAR_TRAINING_APP_TARGET car_training_app)
 
 
 # ==== SOURCE FILES =========================================
@@ -28,9 +22,6 @@ set(SOURCES
     src/controller.cpp
 )
 
-set(BEHAVIORS
-    behaviors/test_do_once.xml
-)
 
 # ==== FINDING PACKAGES =========================================
 
@@ -41,28 +32,22 @@ find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Core REQUIRED)
 
 # ==== MAKING TARGET =========================================
 
-add_executable(${SMART_CAR_TARGET} ${HEADERS} ${SOURCES} ${BEHAVIORS})
+add_executable(${CAR_TRAINING_APP_TARGET} ${HEADERS} ${SOURCES})
 
-add_compile_definitions(BEHAVIORS_PATH="${BEHAVIORS_PATH}")
-
-target_link_libraries(${SMART_CAR_TARGET}
+target_link_libraries(${CAR_TRAINING_APP_TARGET}
     Qt${QT_VERSION_MAJOR}::Core
     peripherals
-    behaviors
+    camera
     network
     imageproc
 )
 
-target_include_directories(${SMART_CAR_TARGET}
+target_include_directories(${CAR_TRAINING_APP_TARGET}
     PUBLIC
         include
-
-    PRIVATE
-        src
 )
 
 
 # ==== INSTALLATION =========================================
 
-install(TARGETS ${SMART_CAR_TARGET} RUNTIME DESTINATION "/tmp/")
-install(DIRECTORY behaviors/ DESTINATION ${BEHAVIORS_PATH})
+install(TARGETS ${CAR_TRAINING_APP_TARGET} RUNTIME DESTINATION "/tmp/")

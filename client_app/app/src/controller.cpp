@@ -13,25 +13,24 @@
 
 using namespace std;
 
-constexpr auto INPUT_UPDATE_RATE = 50; // ms
-
-Controller::Controller(QObject *parent)
+Controller::Controller(const QHostAddress &host, QObject *parent)
     : QObject{parent}
 {
-    connect(&m_imageReceiver, &ImageReceiver::receivedFrame, this, [this](QImage frame) {
-        if (m_preview) {
-            m_preview->setNewImage(frame);
-        }
+    connect(&m_commander, &ICommander::connected, this, [this, host] {
+        qDebug() << "Commander connected to" << host << ":" << CONTROL_PORT;
     });
 
-    connect(&m_imageReceiver, &ImageReceiver::hostChanged, this, [this] {
-        m_movement = make_unique<RemoteMovement>(m_imageReceiver.host());
-        m_timer.start(INPUT_UPDATE_RATE);
+    connect(&m_commander, &ICommander::disconnected, this, [this] {
+        qDebug() << "Commander distconnected";
     });
 
-    connect(&m_timer, &QTimer::timeout, this, [this] { m_movement->move(m_vector); });
+    m_commander.connectToHost(host, CONTROL_PORT);
+    qDebug() << "Commander trying to connect to " << host << ":" << CONTROL_PORT;
+}
 
-    m_imageReceiver.start(FRAME_PORT);
+Controller::~Controller()
+{
+    m_commander.disconnectFromHost();
 }
 
 void Controller::setStreamPreview(StreamPreview *preview)
@@ -41,34 +40,8 @@ void Controller::setStreamPreview(StreamPreview *preview)
 
 void Controller::onKeyPressed(Qt::Key key)
 {
-    switch (key) {
-    case Qt::Key_Up:
-        m_vector.y = 1;
-        break;
-    case Qt::Key_Down:
-        m_vector.y = -1;
-        break;
-    case Qt::Key_Right:
-        m_vector.x = 1;
-        break;
-    case Qt::Key_Left:
-        m_vector.x = -1;
-        break;
-    default:;
-    }
 }
 
 void Controller::onKeyReleased(Qt::Key key)
 {
-    switch (key) {
-    case Qt::Key_Up:
-    case Qt::Key_Down:
-        m_vector.y = 0;
-        break;
-    case Qt::Key_Right:
-    case Qt::Key_Left:
-        m_vector.x = 0;
-        break;
-    default:;
-    }
 }

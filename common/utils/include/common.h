@@ -7,7 +7,8 @@
 
 #pragma once
 
-constexpr auto FRAME_PORT = 10100;
+constexpr auto CONTROL_PORT = 10100;
+constexpr auto FRAME_PORT = CONTROL_PORT + 1;
 constexpr auto MOVE_PORT = FRAME_PORT + 1;
 
 constexpr auto ASPECT_RATIO = 4.f / 3.f;

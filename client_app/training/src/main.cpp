@@ -10,15 +10,17 @@
 #include <QQmlContext>
 #include <QDebug>
 
+#include <remotemovement.h>
 #include <controller.h>
+#include <common.h>
 
 using namespace std;
 
-constexpr auto IP = "192.168.100.104";
+constexpr auto INPUT_UPDATE_INTERVAL = 50; // ms
+constexpr auto IP = "192.168.100.102";
 
 int main(int argc, char *argv[])
 {
-    qmlRegisterType<StreamPreview>("Stream", 1, 0, "StreamPreview");
     qmlRegisterUncreatableType<Controller>("Controller",
                                            1,
                                            0,
@@ -27,7 +29,8 @@ int main(int argc, char *argv[])
 
     QGuiApplication app(argc, argv);
 
-    Controller controller(QHostAddress{IP});
+    Controller controller(make_shared<RemoteMovement>(QHostAddress{IP}, MOVE_PORT),
+                          INPUT_UPDATE_INTERVAL);
 
     QQmlApplicationEngine engine;
     engine.addImportPath("qrc:/");  // Import modules (assets, etc)
@@ -40,6 +43,8 @@ int main(int argc, char *argv[])
                 QCoreApplication::exit(-1);
         }, Qt::QueuedConnection);
     engine.load(url);
+
+    controller.start();
 
     return app.exec();
 }

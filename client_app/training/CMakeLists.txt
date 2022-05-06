@@ -8,43 +8,46 @@
 
 # ==== CONFIGURATION =========================================
 
-set(IPERIPHERALS_TARGET iperipherals)
+set(CLIENT_TRAINING_APP_TARGET client_training_app)
 
 
 # ==== SOURCE FILES =========================================
 
 set(HEADERS
-    include/imotoractuator.h
-    include/isensor.h
-    include/iussensor.h
-    include/iirsensor.h
-    include/icamera.h
+    include/controller.h
 )
 
 set(SOURCES
-    src/iussensor.cpp
-    src/iirsensor.cpp
+    src/main.cpp
+    src/controller.cpp
+)
+
+set(RESOURCES
+    qml.qrc
 )
 
 
 # ==== FINDING PACKAGES =========================================
 
 # Qt
-find_package(QT NAMES Qt6 Qt5 COMPONENTS Core REQUIRED)
-find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Core REQUIRED)
+find_package(QT NAMES Qt6 Qt5 COMPONENTS Core Gui Quick REQUIRED)
+find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Core Gui Quick REQUIRED)
 
 
 # ==== MAKING TARGET =========================================
 
-add_library(${IPERIPHERALS_TARGET} ${HEADERS} ${SOURCES})
+add_executable(${CLIENT_TRAINING_APP_TARGET} ${HEADERS} ${SOURCES} ${RESOURCES})
 
-target_link_libraries(${IPERIPHERALS_TARGET}
+target_link_libraries(${CLIENT_TRAINING_APP_TARGET}
     PUBLIC
         Qt${QT_VERSION_MAJOR}::Core
-        utils
+        Qt${QT_VERSION_MAJOR}::Gui
+        Qt${QT_VERSION_MAJOR}::Quick
+        network
 )
 
-target_include_directories(${IPERIPHERALS_TARGET}
+target_include_directories(${CLIENT_TRAINING_APP_TARGET}
     PUBLIC
         include
 )
+

@@ -12,8 +12,8 @@
 
 #include <common.h>
 
-RMoveController::RMoveController(QHostAddress host, std::unique_ptr<IMovement> movement, QObject *parent)
-    : QObject(parent), m_host(host), m_movement(move(movement))
+RMoveController::RMoveController(std::shared_ptr<IMovement> movement, uint16_t port, QObject *parent)
+    : QObject(parent), m_movement(movement), m_port(port)
 {
     connect(&m_socket, &QAbstractSocket::readyRead, this, &RMoveController::readMoveData);
 
@@ -32,12 +32,12 @@ bool RMoveController::start()
     if (m_running)
         return false;
 
-    if (m_socket.bind(QHostAddress::AnyIPv4, MOVE_PORT)) {
-        qDebug() << "Socket bound to port" << MOVE_PORT;
+    if (m_socket.bind(m_port)) {
+        qDebug() << "Socket bound to port" << m_port;
         m_running = true;
         return true;
     } else {
-        qWarning() << "Couldn't bind to port" << MOVE_PORT;
+        qWarning() << "Couldn't bind to port" << m_port;
         return false;
     }
 }
@@ -51,19 +51,23 @@ void RMoveController::stop()
     m_running = false;
 }
 
+const Vector &RMoveController::vector()
+{
+    return m_vector;
+}
+
 void RMoveController::readMoveData()
 {
     auto datagram = m_socket.receiveDatagram();
-    if (datagram.isNull() || datagram.senderAddress() != m_host)
+    if (datagram.isNull())
         return;
 
     auto buffer = datagram.data();
     QDataStream stream(&buffer, QIODevice::ReadOnly);
-    Vector vector;
     quint64 sequence;
-    stream >> vector.x >> vector.y >> sequence;
+    stream >> m_vector.x >> m_vector.y >> sequence;
     if (sequence > m_lastSequence) {
-        m_movement->move(vector);
+        m_movement->move(m_vector);
         m_lastSequence = sequence;
     }
 }

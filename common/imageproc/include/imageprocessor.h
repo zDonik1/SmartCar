@@ -42,10 +42,12 @@ public:
     explicit ImageProcessor(QObject *parent = nullptr);
     virtual ~ImageProcessor();
 
-    virtual void start(std::shared_ptr<ICamera> camera) override;
+    virtual void start() override;
     virtual void stop() override;
+
+public Q_SLOTS:
+    virtual void processFrame(FramePtr frame) override;
 
 private:
     ProcessThread m_processThread;
-    std::shared_ptr<ICamera> m_camera;
 };
