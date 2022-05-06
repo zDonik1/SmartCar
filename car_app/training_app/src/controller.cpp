@@ -7,19 +7,27 @@
 
 #include <controller.h>
 
-using namespace std;
+#include <QDir>
 
-Controller::Controller(shared_ptr<ICamera> camera,
-                       shared_ptr<IImageProcessor> imageProcessor,
-                       shared_ptr<IMovement> movement,
-                       QObject *parent)
-    : QObject(parent), m_camera(camera), m_imageProcessor(imageProcessor),
-      m_moveController(movement)
+#include "opencv2/imgcodecs.hpp"
+
+using namespace std;
+using namespace cv;
+
+constexpr auto TRAIN_DATA_DIR = "training_data1";
+
+Controller::Controller(shared_ptr<ICamera> camera, shared_ptr<IMovement> movement, QObject *parent)
+    : QObject(parent), m_camera(camera), m_moveController(movement)
 {
-    connect(m_camera.get(),
-            &ICamera::frameReady,
-            m_imageProcessor.get(),
-            &IImageProcessor::processFrame);
+    QDir().mkdir(TRAIN_DATA_DIR);
+    connect(m_camera.get(), &ICamera::frameReady, this, [this](FramePtr frame) {
+        auto filename = QString("%1/%2-%3:%4.jpg")
+                            .arg(TRAIN_DATA_DIR)
+                            .arg(frame->sequence)
+                            .arg(m_moveController.vector().x)
+                            .arg(m_moveController.vector().y);
+        imwrite(filename.toStdString(), frame->image);
+    });
 }
 
 Controller::~Controller()
@@ -30,13 +38,11 @@ Controller::~Controller()
 void Controller::start()
 {
     m_camera->start();
-    m_imageProcessor->start();
     m_moveController.start();
 }
 
 void Controller::stop()
 {
     m_camera->stop();
-    m_imageProcessor->stop();
     m_moveController.stop();
 }

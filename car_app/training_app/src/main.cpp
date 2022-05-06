@@ -12,7 +12,6 @@
 #include <movement.h>
 #include <debugmovement.h>
 #include <lccamera.h>
-#include <imageprocessor.h>
 #include <controller.h>
 #include <common.h>
 
@@ -40,7 +39,6 @@ int main(int argc, char *argv[])
     auto movement = make_shared<DebugMovement>();
 
     Controller controller(make_shared<LCCamera>(DEFAULT_CAMERA, CAPTURE_HEIGHT, CAPTURE_WIDTH),
-                          make_shared<ImageProcessor>(),
                           movement);
 
     controller.start();

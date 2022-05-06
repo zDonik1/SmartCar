@@ -51,6 +51,11 @@ void RMoveController::stop()
     m_running = false;
 }
 
+const Vector &RMoveController::vector()
+{
+    return m_vector;
+}
+
 void RMoveController::readMoveData()
 {
     auto datagram = m_socket.receiveDatagram();
@@ -59,11 +64,10 @@ void RMoveController::readMoveData()
 
     auto buffer = datagram.data();
     QDataStream stream(&buffer, QIODevice::ReadOnly);
-    Vector vector;
     quint64 sequence;
-    stream >> vector.x >> vector.y >> sequence;
+    stream >> m_vector.x >> m_vector.y >> sequence;
     if (sequence > m_lastSequence) {
-        m_movement->move(vector);
+        m_movement->move(m_vector);
         m_lastSequence = sequence;
     }
 }

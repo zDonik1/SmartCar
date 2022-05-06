@@ -23,6 +23,7 @@ set(SOURCES
     src/imageprocessor.cpp
 )
 
+
 # ==== FINDING PACKAGES =========================================
 
 find_package(QT NAMES Qt6 Qt5 COMPONENTS Core REQUIRED)

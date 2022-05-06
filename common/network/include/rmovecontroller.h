@@ -25,12 +25,15 @@ public:
     bool start();
     void stop();
 
+    const Vector &vector();
+
 private slots:
     void readMoveData();
 
 private:
     std::shared_ptr<IMovement> m_movement;
     QUdpSocket m_socket;
+    Vector m_vector;
     bool m_running = false;
     quint64 m_lastSequence = 0;
 };
