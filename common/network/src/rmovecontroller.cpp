@@ -12,8 +12,8 @@
 
 #include <common.h>
 
-RMoveController::RMoveController(std::shared_ptr<IMovement> movement, QObject *parent)
-    : QObject(parent), m_movement(movement)
+RMoveController::RMoveController(std::shared_ptr<IMovement> movement, uint16_t port, QObject *parent)
+    : QObject(parent), m_movement(movement), m_port(port)
 {
     connect(&m_socket, &QAbstractSocket::readyRead, this, &RMoveController::readMoveData);
 
@@ -32,12 +32,12 @@ bool RMoveController::start()
     if (m_running)
         return false;
 
-    if (m_socket.bind(MOVE_PORT)) {
-        qDebug() << "Socket bound to port" << MOVE_PORT;
+    if (m_socket.bind(m_port)) {
+        qDebug() << "Socket bound to port" << m_port;
         m_running = true;
         return true;
     } else {
-        qWarning() << "Couldn't bind to port" << MOVE_PORT;
+        qWarning() << "Couldn't bind to port" << m_port;
         return false;
     }
 }

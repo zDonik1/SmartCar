@@ -11,14 +11,15 @@
 
 #include <common.h>
 
-RemoteMovement::RemoteMovement(const QHostAddress &host)
+RemoteMovement::RemoteMovement(const QHostAddress &host, uint16_t port, QObject *parent)
+    : QObject(parent)
 {
     connect(&m_socket, &QAbstractSocket::stateChanged, this, [this](auto state) {
         qDebug() << "Socket state changed:" << state;
     });
 
-    m_socket.connectToHost(host, MOVE_PORT);
-    qDebug() << "Trying to connect to" << host << ":" << MOVE_PORT;
+    m_socket.connectToHost(host, port);
+    qDebug() << "Trying to connect to" << host << ":" << port;
 }
 
 RemoteMovement::~RemoteMovement()

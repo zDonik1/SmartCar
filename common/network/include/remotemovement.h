@@ -15,7 +15,7 @@
 class RemoteMovement : public QObject, public IMovement
 {
 public:
-    RemoteMovement(const QHostAddress &host);
+    RemoteMovement(const QHostAddress &host, uint16_t port, QObject *parent = nullptr);
     virtual ~RemoteMovement() override;
 
     virtual void move(Vector vector) override;

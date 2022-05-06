@@ -12,6 +12,7 @@
 
 #include <remotemovement.h>
 #include <controller.h>
+#include <common.h>
 
 using namespace std;
 
@@ -28,7 +29,8 @@ int main(int argc, char *argv[])
 
     QGuiApplication app(argc, argv);
 
-    Controller controller(make_shared<RemoteMovement>(QHostAddress{IP}), INPUT_UPDATE_INTERVAL);
+    Controller controller(make_shared<RemoteMovement>(QHostAddress{IP}, MOVE_PORT),
+                          INPUT_UPDATE_INTERVAL);
 
     QQmlApplicationEngine engine;
     engine.addImportPath("qrc:/");  // Import modules (assets, etc)

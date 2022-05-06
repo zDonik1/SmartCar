@@ -10,7 +10,9 @@
 #include <QDir>
 #include <QDateTime>
 
-#include "opencv2/imgcodecs.hpp"
+#include <opencv2/imgcodecs.hpp>
+
+#include <common.h>
 
 using namespace std;
 using namespace cv;
@@ -18,7 +20,7 @@ using namespace cv;
 constexpr auto TRAIN_DATA_DIR = "training_data";
 
 Controller::Controller(shared_ptr<ICamera> camera, shared_ptr<IMovement> movement, QObject *parent)
-    : QObject(parent), m_camera(camera), m_moveController(movement)
+    : QObject(parent), m_camera(camera), m_moveController(movement, MOVE_PORT)
 {
     QDir().mkdir(TRAIN_DATA_DIR);
     connect(m_camera.get(), &ICamera::frameReady, this, [this](FramePtr frame) {
