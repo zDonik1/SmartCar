@@ -24,6 +24,10 @@ Controller::Controller(shared_ptr<ICamera> camera, shared_ptr<IMovement> movemen
 {
     QDir().mkdir(TRAIN_DATA_DIR);
     connect(m_camera.get(), &ICamera::frameReady, this, [this](FramePtr frame) {
+        // ignoring no movement and when moving backwards
+        if (m_moveController.vector().isZero() || m_moveController.vector().y < 0)
+            return;
+
         auto filename = QString("%1/%2 %3:%4.jpg")
                             .arg(TRAIN_DATA_DIR,
                                  QDateTime::currentDateTime().toString("dd-MM-yyyy_hh:mm:ss.zzz"))
