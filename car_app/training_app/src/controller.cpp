@@ -8,22 +8,23 @@
 #include <controller.h>
 
 #include <QDir>
+#include <QDateTime>
 
 #include "opencv2/imgcodecs.hpp"
 
 using namespace std;
 using namespace cv;
 
-constexpr auto TRAIN_DATA_DIR = "training_data1";
+constexpr auto TRAIN_DATA_DIR = "training_data";
 
 Controller::Controller(shared_ptr<ICamera> camera, shared_ptr<IMovement> movement, QObject *parent)
     : QObject(parent), m_camera(camera), m_moveController(movement)
 {
     QDir().mkdir(TRAIN_DATA_DIR);
     connect(m_camera.get(), &ICamera::frameReady, this, [this](FramePtr frame) {
-        auto filename = QString("%1/%2-%3:%4.jpg")
-                            .arg(TRAIN_DATA_DIR)
-                            .arg(frame->sequence)
+        auto filename = QString("%1/%2 %3:%4.jpg")
+                            .arg(TRAIN_DATA_DIR,
+                                 QDateTime::currentDateTime().toString("dd-MM-yyyy_hh:mm:ss.zzz"))
                             .arg(m_moveController.vector().x)
                             .arg(m_moveController.vector().y);
         imwrite(filename.toStdString(), frame->image);
