@@ -20,6 +20,6 @@ public:
 
     virtual float distance() const = 0;
 
-signals:
+Q_SIGNALS:
     void distanceChanged();
 };

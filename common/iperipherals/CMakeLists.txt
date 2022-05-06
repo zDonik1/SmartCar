@@ -18,6 +18,7 @@ set(HEADERS
     include/isensor.h
     include/iussensor.h
     include/iirsensor.h
+    include/icamera.h
 )
 
 set(SOURCES
@@ -40,6 +41,7 @@ add_library(${IPERIPHERALS_TARGET} ${HEADERS} ${SOURCES})
 target_link_libraries(${IPERIPHERALS_TARGET}
     PUBLIC
         Qt${QT_VERSION_MAJOR}::Core
+        utils
 )
 
 target_include_directories(${IPERIPHERALS_TARGET}

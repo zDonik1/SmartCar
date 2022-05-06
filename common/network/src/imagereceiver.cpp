@@ -9,11 +9,12 @@
 
 #include <constants.h>
 #include <common.h>
+#include <utilities.h>
 
 using namespace std;
 
 ImageReceiver::ImageReceiver(QObject *parent)
-    : IImageReceiver(parent), m_image(SCALED_IMAGE_WIDTH, SCALED_IMAGE_HEIGHT, QImage::Format_BGR888)
+    : IImageReceiver(parent), m_mat(SCALED_IMAGE_HEIGHT, SCALED_IMAGE_WIDTH, CV_8UC1)
 {
     connect(&m_socket, &QAbstractSocket::readyRead, this, &ImageReceiver::readFrames);
 
@@ -66,8 +67,6 @@ void ImageReceiver::readFrames()
         emit hostChanged();
     }
 
-    //    qDebug() << (m_bytesRead += DATAGRAM_SIZE) / m_timer.elapsed() << "bytes per ms";
-
     auto offsetPtr = buffer.data();
     auto sequence = *reinterpret_cast<SequenceType *>(offsetPtr);
     offsetPtr += SEQUENCE_SIZE;
@@ -77,8 +76,8 @@ void ImageReceiver::readFrames()
     }
 
     if (sequence > m_sequence) {
-        emit receivedFrame(m_image);
-//        qDebug() << "received frame" << m_sequence;
+        emit receivedFrame(
+            make_shared<Frame>(m_sequence, framerateFromMs(m_timer.restart()), m_mat.clone()));
         m_sequence = sequence;
     }
 
@@ -97,7 +96,9 @@ void ImageReceiver::readFrames()
     }
 
     for (auto i = 0; i < lineCount; ++i) {
-        memcpy(m_image.scanLine(row + i), offsetPtr, lineSize(SCALED_IMAGE_WIDTH));
+        memcpy(reinterpret_cast<char *>(m_mat.row(row + i).data),
+               offsetPtr,
+               lineSize(SCALED_IMAGE_WIDTH));
         offsetPtr += lineSize(SCALED_IMAGE_WIDTH);
     }
 }

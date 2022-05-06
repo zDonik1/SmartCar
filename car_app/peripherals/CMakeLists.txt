@@ -18,6 +18,7 @@ set(HEADERS
     include/ussensor.h
     src/usworker.h
     include/irsensor.h
+    include/lccamera.h
 )
 
 set(SOURCES
@@ -25,7 +26,10 @@ set(SOURCES
     src/ussensor.cpp
     src/usworker.cpp
     src/irsensor.cpp
+    src/lccamera.cpp
 )
+
+add_compile_definitions(QT_NO_KEYWORDS)
 
 
 # ==== FINDING PACKAGES =========================================
@@ -38,7 +42,13 @@ find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Core REQUIRED)
 find_package(WiringPI REQUIRED)
 
 # OpenCV
-find_package(OpenCV REQUIRED)
+#find_package(OpenCV REQUIRED)
+
+# pkg-config
+find_package(PkgConfig REQUIRED)
+
+# libcamera
+pkg_check_modules(LIBCAMERA REQUIRED IMPORTED_TARGET libcamera)
 
 
 # ==== MAKING TARGET =========================================
@@ -48,17 +58,18 @@ add_library(${PERIPHERALS_TARGET} ${HEADERS} ${SOURCES})
 target_link_libraries(${PERIPHERALS_TARGET}
     PUBLIC
         Qt${QT_VERSION_MAJOR}::Core
+#        ${OpenCV_LIBS}
         iperipherals
 
     PRIVATE
-        ${OpenCV_LIBS}
         wiringPi
+        PkgConfig::LIBCAMERA
 )
 
 target_include_directories(${PERIPHERALS_TARGET}
     PUBLIC
         include
 
-    PRIVATE
-        ${OpenCV_INCLUDE_DIRS}
+#    PRIVATE
+#        ${OpenCV_INCLUDE_DIRS}
 )

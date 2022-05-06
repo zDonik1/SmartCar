@@ -13,6 +13,8 @@ struct Frame
 {
     Frame() = default;
     Frame(unsigned int seq, cv::Mat img) : sequence(seq), image(img) {}
+    Frame(unsigned int seq, float frate, cv::Mat img) : sequence(seq), framerate(frate), image(img)
+    {}
 
 public:
     cv::Mat image;

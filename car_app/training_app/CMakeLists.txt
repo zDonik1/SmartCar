@@ -39,6 +39,7 @@ target_link_libraries(${CAR_TRAINING_APP_TARGET}
     peripherals
     camera
     network
+    imageproc
 )
 
 target_include_directories(${CAR_TRAINING_APP_TARGET}

@@ -20,11 +20,12 @@
 #include <libcamera/control_ids.h>
 #include <libcamera/formats.h>
 
+#include <utilities.h>
+
 using namespace std;
 using namespace libcamera;
 using namespace cv;
 
-constexpr auto NANOSEC_IN_SEC = 1e9;
 constexpr auto BUFFER_COUNT = 6;
 
 
@@ -302,7 +303,7 @@ void LCCamera::PImpl::requestComplete(Request *request)
     if (m_lastTimestamp == 0 || m_lastTimestamp == timestamp)
         payload->framerate = 0;
     else
-        payload->framerate = NANOSEC_IN_SEC / (timestamp - m_lastTimestamp);
+        payload->framerate = framerateFromNs(timestamp - m_lastTimestamp);
     m_lastTimestamp = timestamp;
 
     Q_EMIT pubImpl->frameReady(payload);

@@ -9,7 +9,7 @@
 
 #include <QObject>
 
-#include <icamera.h>
+#include <frame.h>
 
 class IImageProcessor : public QObject
 {
@@ -21,9 +21,9 @@ public:
     virtual void start() = 0;
     virtual void stop() = 0;
 
-public Q_SLOTS:
+public slots:
     virtual void processFrame(FramePtr frame) = 0;
 
-Q_SIGNALS:
+signals:
     void frameReady(FramePtr frame);
 };

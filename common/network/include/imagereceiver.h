@@ -30,7 +30,7 @@ private slots:
 private:
     QUdpSocket m_socket;
     QHostAddress m_host;
-    QImage m_image;
+    cv::Mat m_mat;
     QElapsedTimer m_timer;
     bool m_running = false;
     uint64_t m_sequence = 0;

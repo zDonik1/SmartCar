@@ -49,8 +49,8 @@ target_link_libraries(${SMART_CAR_TARGET}
     Qt${QT_VERSION_MAJOR}::Core
     peripherals
     behaviors
-    camera
     network
+    imageproc
 )
 
 target_include_directories(${SMART_CAR_TARGET}

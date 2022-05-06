@@ -9,9 +9,9 @@
 
 #include <QObject>
 #include <QHostAddress>
-#include <QImage>
 
 #include <vector.h>
+#include <frame.h>
 
 class IImageReceiver : public QObject
 {
@@ -26,6 +26,6 @@ public:
     virtual const QHostAddress &host() const = 0;
 
 signals:
-    void receivedFrame(QImage frame);
+    void receivedFrame(FramePtr frame);
     void hostChanged();
 };

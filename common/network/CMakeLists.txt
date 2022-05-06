@@ -40,8 +40,8 @@ set(SOURCES
 
 # ==== FINDING PACKAGES =========================================
 
-find_package(QT NAMES Qt6 Qt5 COMPONENTS Core Gui Network REQUIRED)
-find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Core Gui Network REQUIRED)
+find_package(QT NAMES Qt6 Qt5 COMPONENTS Core Network REQUIRED)
+find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Core Network REQUIRED)
 
 
 # ==== MAKING TARGET =========================================
@@ -51,7 +51,6 @@ add_library(${NETWORK_TARGET} ${HEADERS} ${SOURCES})
 target_link_libraries(${NETWORK_TARGET}
     PUBLIC
         Qt${QT_VERSION_MAJOR}::Core
-        Qt${QT_VERSION_MAJOR}::Gui
         Qt${QT_VERSION_MAJOR}::Network
         services
         utils
