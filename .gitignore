@@ -50,3 +50,9 @@ compile_commands.json
 
 # QtCreator local machine specific files for imported projects
 *creator.user*
+
+# PyCharm files
+.idea
+
+# training data
+model/training_data
