@@ -16,7 +16,7 @@
 using namespace std;
 
 constexpr auto INPUT_UPDATE_INTERVAL = 50; // ms
-constexpr auto IP = "192.168.100.104";
+constexpr auto IP = "192.168.100.102";
 
 int main(int argc, char *argv[])
 {

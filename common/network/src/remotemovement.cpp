@@ -18,6 +18,7 @@ RemoteMovement::RemoteMovement(const QHostAddress &host)
     });
 
     m_socket.connectToHost(host, MOVE_PORT);
+    qDebug() << "Trying to connect to" << host << ":" << MOVE_PORT;
 }
 
 RemoteMovement::~RemoteMovement()
@@ -35,7 +36,5 @@ void RemoteMovement::move(Vector vector)
     QByteArray buffer;
     QDataStream stream(&buffer, QIODevice::WriteOnly);
     stream << vector.x << vector.y << m_sequence++;
-    if (m_socket.write(buffer) < 0) {
-        qDebug() << "Failed to send move vector:" << m_socket.errorString();
-    }
+    m_socket.write(buffer);
 }

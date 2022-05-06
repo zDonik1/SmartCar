@@ -16,6 +16,8 @@
 
 class Controller : public QObject
 {
+    Q_OBJECT
+
 public:
     Controller(std::shared_ptr<IMovement> movement,
                int tickInterval,
