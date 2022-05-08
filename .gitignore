@@ -56,3 +56,4 @@ compile_commands.json
 
 # training data
 model/training_data
+model/trained_models
