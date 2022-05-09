@@ -13,8 +13,6 @@
 
 using namespace std;
 
-constexpr auto MAX_SPEED = 1;
-
 inline auto invLerp(float from, float to, float value)
 {
     return (value - from) / (to - from);
@@ -66,8 +64,9 @@ void Movement::move(Vector vector)
         return;
     }
 
-    m_leftMotor->setValue(leftMotorRatioForVector(vector) * MAX_SPEED);
-    m_rightMotor->setValue(leftMotorRatioForVector({-vector.x, vector.y}) * MAX_SPEED);
+    auto speed = std::clamp(vector.length(), 0.f, 1.f);
+    m_leftMotor->setValue(leftMotorRatioForVector(vector) * speed);
+    m_rightMotor->setValue(leftMotorRatioForVector({-vector.x, vector.y}) * speed);
 }
 
 void Movement::stop()
