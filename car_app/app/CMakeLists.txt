@@ -32,11 +32,15 @@ set(BEHAVIORS
     behaviors/test_do_once.xml
 )
 
+
 # ==== FINDING PACKAGES =========================================
 
 # Qt
 find_package(QT NAMES Qt6 Qt5 COMPONENTS Core REQUIRED)
 find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Core REQUIRED)
+
+# TensorFlow
+find_package(TensorFlow REQUIRED)
 
 
 # ==== MAKING TARGET =========================================
@@ -47,6 +51,7 @@ add_compile_definitions(BEHAVIORS_PATH="${BEHAVIORS_PATH}")
 
 target_link_libraries(${SMART_CAR_TARGET}
     Qt${QT_VERSION_MAJOR}::Core
+    TensorFlow
     peripherals
     behaviors
     network

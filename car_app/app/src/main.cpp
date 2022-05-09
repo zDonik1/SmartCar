@@ -55,5 +55,7 @@ int main(int argc, char *argv[])
 
     auto usSensor = make_shared<USSensor>(US_TRIGGER_PIN, US_ECHO_PIN);
 
+
+
     return a.exec();
 }
