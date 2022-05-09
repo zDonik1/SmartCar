@@ -23,7 +23,7 @@ constexpr auto MOTOR_RIGHT_FORWARD_PIN = 5;
 constexpr auto MOTOR_RIGHT_BACKWARD_PIN = 6;
 
 constexpr auto DEFAULT_CAMERA = 0;
-constexpr unsigned int CAPTURE_HEIGHT = 480;
+constexpr unsigned int CAPTURE_HEIGHT = 150;
 constexpr unsigned int CAPTURE_WIDTH = CAPTURE_HEIGHT * ASPECT_RATIO;
 
 int main(int argc, char *argv[])
