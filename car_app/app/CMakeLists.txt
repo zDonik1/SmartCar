@@ -30,6 +30,7 @@ set(SOURCES
 
 set(BEHAVIORS
     behaviors/test_do_once.xml
+    behaviors/test_follow_lane.xml
 )
 
 

@@ -14,14 +14,14 @@
 #include <debugmovement.h>
 #include <usobstacledetector.h>
 #include <lccamera.h>
-#include <imageprocessor.h>
+#include <controller.h>
 #include <common.h>
 
 using namespace std;
 
-constexpr auto DEBUG = true;
-constexpr auto TREE_TICK_INTERVAL = DEBUG ? 1000 : 1; // ms
-constexpr auto XML_TREE_FILE = "test_do_once.xml";
+constexpr auto DEBUG = false;
+constexpr auto TREE_TICK_INTERVAL = DEBUG ? 1000 : 25; // ms
+constexpr auto XML_TREE_FILE = "test_follow_lane.xml";
 
 constexpr auto MOTOR_LEFT_FORWARD_PIN = 1;
 constexpr auto MOTOR_LEFT_BACKWARD_PIN = 4;
@@ -38,7 +38,7 @@ constexpr auto IR_TRACER_LEFT_PIN = 11;
 constexpr auto IR_TRACER_RIGHT_PIN = 10;
 
 constexpr auto DEFAULT_CAMERA = 0;
-constexpr unsigned int CAPTURE_HEIGHT = 480;
+constexpr unsigned int CAPTURE_HEIGHT = 150;
 constexpr unsigned int CAPTURE_WIDTH = CAPTURE_HEIGHT * ASPECT_RATIO;
 
 int main(int argc, char *argv[])
@@ -55,7 +55,13 @@ int main(int argc, char *argv[])
 
     auto usSensor = make_shared<USSensor>(US_TRIGGER_PIN, US_ECHO_PIN);
 
+    auto obstacleDetector = make_shared<USObstacleDetector>(usSensor);
 
+    auto camera = make_shared<LCCamera>(DEFAULT_CAMERA, CAPTURE_HEIGHT, CAPTURE_WIDTH);
+
+    Controller controller(usSensor, movement, obstacleDetector, camera, TREE_TICK_INTERVAL, DEBUG);
+    controller.makeTreeFromFile(string{BEHAVIORS_PATH} + XML_TREE_FILE);
+    controller.start();
 
     return a.exec();
 }
