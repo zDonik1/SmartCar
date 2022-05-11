@@ -68,6 +68,7 @@ private:
     void startSensors();
     void stopSensors();
     void requestSensorsUpdate();
+    void preprocessFrame(FramePtr frame);
 
 private:
     BT::Blackboard::Ptr m_blackboard;
@@ -76,6 +77,7 @@ private:
     std::unique_ptr<BT::StdCoutLogger> m_logger;
 
     std::unique_ptr<tflite::FlatBufferModel> m_model;
+    tflite::ops::builtin::BuiltinOpResolver m_resolver;
     std::unique_ptr<tflite::Interpreter> m_interpreter;
 
     std::shared_ptr<IUSSensor> m_usSensor;

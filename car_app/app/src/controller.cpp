@@ -9,6 +9,8 @@
 
 #include <QDebug>
 
+#include <opencv2/imgproc.hpp>
+
 #include <move.h>
 #include <avoid.h>
 #include <noobstacleinfront.h>
@@ -18,6 +20,7 @@
 using namespace std;
 using namespace BT;
 using namespace tflite;
+using namespace cv;
 
 constexpr auto SENSOR_UPDATE_INTERVAL = 0; // ms, 0 means manual ticking
 
@@ -82,8 +85,7 @@ bool Controller::makeModelFromFile(const std::string &filename)
     if (!m_model)
         return false;
 
-    if (InterpreterBuilder(*m_model, tflite::ops::builtin::BuiltinOpResolver())(&m_interpreter)
-        != kTfLiteOk)
+    if (InterpreterBuilder(*m_model, m_resolver)(&m_interpreter) != kTfLiteOk)
         return false;
 
     if (m_interpreter->AllocateTensors() != kTfLiteOk)
@@ -137,10 +139,40 @@ void Controller::registerNodes()
         if (!m_frame)
             return NodeStatus::FAILURE;
 
-        qDebug() << m_frame->sequence;
-        // give frame to interpreter
-        // get interpreter output
-        // move there
+        preprocessFrame(m_frame);
+        auto tensor = m_interpreter->input_tensor(0);
+        auto &mat = m_frame->image;
+        int count = 0; // count of current elements in relation to data in input tensor
+        for (int i = 0; i < mat.rows; ++i) {
+            for (int j = 0; j < mat.cols; ++j) {
+                for (int k = 0; k < mat.channels(); ++k) {
+                    tensor->data.f[count++] = static_cast<float>(mat.at<uchar>(i, j, k)) / 255;
+                }
+            }
+        }
+
+        if (m_interpreter->Invoke() != kTfLiteOk) {
+            qWarning() << "Couldn't run prediction";
+            return NodeStatus::FAILURE;
+        }
+
+        auto output = *m_interpreter->typed_output_tensor<float>(0);
+
+        qDebug() << output;
+        //        qDebug() << vector.x << vector.y;
+        Vector vector;
+        auto delta = 35;
+        if (output < 90 - delta) {
+            vector = {1.f, 0.8f};
+        } else if (output > 90 + delta) {
+            vector = {-1.f, 0.8f};
+        } else {
+            vector = {static_cast<float>(cos(output * M_PI / 180)),
+                      static_cast<float>(sin(output * M_PI / 180))};
+            vector *= 0.5;
+        }
+        qDebug() << vector.x << vector.y;
+        m_movement->move(vector);
         return NodeStatus::SUCCESS;
     });
 
@@ -187,4 +219,13 @@ void Controller::requestSensorsUpdate()
     for (const auto &sensor : m_sensors) {
         sensor->requestReading();
     }
+}
+
+void Controller::preprocessFrame(FramePtr frame)
+{
+    Rect cropRect(0, frame->image.rows / 2, frame->image.cols, frame->image.rows / 2);
+    frame->image = frame->image(cropRect);
+    cvtColor(frame->image, frame->image, COLOR_BGR2YUV);
+    GaussianBlur(frame->image, frame->image, {3, 3}, 0);
+    resize(frame->image, frame->image, {200, 66});
 }

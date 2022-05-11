@@ -12,8 +12,10 @@ set(SMART_CAR_TARGET smart_car_app)
 
 if (${CMAKE_CROSSCOMPILING})
     set(BEHAVIORS_PATH "/tmp/behaviors/")
+    set(MODELS_PATH "/tmp/models/")
 else()
     set(BEHAVIORS_PATH "${CMAKE_CURRENT_BINARY_DIR}/behaviors/")
+    set(MODELS_PATH "${CMAKE_CURRENT_BINARY_DIR}/models/")
 endif()
 
 
@@ -51,7 +53,11 @@ find_library(TFLITE_LIBRARIES
 
 add_executable(${SMART_CAR_TARGET} ${HEADERS} ${SOURCES} ${BEHAVIORS})
 
-add_compile_definitions(BEHAVIORS_PATH="${BEHAVIORS_PATH}")
+add_compile_definitions(
+    BEHAVIORS_PATH="${BEHAVIORS_PATH}"
+    MODELS_PATH="${MODELS_PATH}"
+)
+
 
 target_link_libraries(${SMART_CAR_TARGET}
     Qt${QT_VERSION_MAJOR}::Core
@@ -75,3 +81,4 @@ target_include_directories(${SMART_CAR_TARGET}
 
 install(TARGETS ${SMART_CAR_TARGET} RUNTIME DESTINATION "/tmp/")
 install(DIRECTORY behaviors/ DESTINATION ${BEHAVIORS_PATH})
+install(DIRECTORY models/ DESTINATION ${MODELS_PATH})

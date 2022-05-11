@@ -22,6 +22,7 @@ using namespace std;
 constexpr auto DEBUG = false;
 constexpr auto TREE_TICK_INTERVAL = DEBUG ? 1000 : 25; // ms
 constexpr auto XML_TREE_FILE = "test_follow_lane.xml";
+constexpr auto LANE_FOLLOW_MODEL_FILE = "lane_navigation.tflite";
 
 constexpr auto MOTOR_LEFT_FORWARD_PIN = 1;
 constexpr auto MOTOR_LEFT_BACKWARD_PIN = 4;
@@ -50,8 +51,11 @@ int main(int argc, char *argv[])
     auto leftMotors = make_unique<MotorActuator>(MOTOR_LEFT_FORWARD_PIN, MOTOR_LEFT_BACKWARD_PIN);
     auto rightMotors = make_unique<MotorActuator>(MOTOR_RIGHT_FORWARD_PIN, MOTOR_RIGHT_BACKWARD_PIN);
 
-//    auto movement = make_shared<Movement>(move(leftMotors), move(rightMotors));
-    auto movement = make_shared<DebugMovement>();
+    shared_ptr<IMovement> movement;
+    if (DEBUG)
+        movement = make_shared<DebugMovement>();
+    else
+        movement = make_shared<Movement>(move(leftMotors), move(rightMotors));
 
     auto usSensor = make_shared<USSensor>(US_TRIGGER_PIN, US_ECHO_PIN);
 
@@ -60,8 +64,12 @@ int main(int argc, char *argv[])
     auto camera = make_shared<LCCamera>(DEFAULT_CAMERA, CAPTURE_HEIGHT, CAPTURE_WIDTH);
 
     Controller controller(usSensor, movement, obstacleDetector, camera, TREE_TICK_INTERVAL, DEBUG);
-    controller.makeTreeFromFile(string{BEHAVIORS_PATH} + XML_TREE_FILE);
-    controller.start();
+    if (controller.makeTreeFromFile(string{BEHAVIORS_PATH} + XML_TREE_FILE)
+        && controller.makeModelFromFile(string{MODELS_PATH} + LANE_FOLLOW_MODEL_FILE)) {
+        controller.start();
+    } else {
+        qWarning() << "Couldn't start controller";
+    }
 
     return a.exec();
 }
