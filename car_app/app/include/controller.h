@@ -22,11 +22,11 @@
 #include <tensorflow/lite/tools/gen_op_registration.h>
 
 #include <iussensor.h>
-#include <iirsensor.h>
 #include <imovement.h>
-#include <iavoider.h>
 #include <iusobstacledetector.h>
 #include <icamera.h>
+#include <imagesender.h>
+#include <commandreceiver.h>
 
 #include <dooncemanager.h>
 
@@ -63,6 +63,8 @@ public:
 private slots:
     void tickTree();
 
+    void stopImageSender();
+
 private:
     void registerNodes();
     void startSensors();
@@ -83,11 +85,14 @@ private:
     std::shared_ptr<IUSSensor> m_usSensor;
     std::vector<std::shared_ptr<ISensor>> m_sensors;
 
+    std::shared_ptr<IMovement> m_movement;
+    std::shared_ptr<IUSObstacleDetector> m_frontObstacleDetector;
+
     std::shared_ptr<ICamera> m_camera;
     FramePtr m_frame;
 
-    std::shared_ptr<IMovement> m_movement;
-    std::shared_ptr<IUSObstacleDetector> m_frontObstacleDetector;
+    CommandReceiver m_receiver;
+    std::unique_ptr<ImageSender> m_imageSender;
 
     QTimer m_tickTimer;
     DoOnceManager m_doOnceManager;

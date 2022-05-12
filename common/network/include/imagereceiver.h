@@ -22,14 +22,11 @@ public:
     virtual bool start(uint16_t port) override;
     virtual void stop() override;
 
-    virtual const QHostAddress &host() const override;
-
 private slots:
     void readFrames();
 
 private:
     QUdpSocket m_socket;
-    QHostAddress m_host;
     cv::Mat m_mat;
     QElapsedTimer m_timer;
     bool m_running = false;

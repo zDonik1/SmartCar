@@ -49,22 +49,12 @@ void ImageReceiver::stop()
     m_running = false;
 }
 
-const QHostAddress &ImageReceiver::host() const
-{
-    return m_host;
-}
-
 void ImageReceiver::readFrames()
 {
     array<char, datagramSize(SCALED_IMAGE_WIDTH)> buffer;
-    bool hostInvalid = m_host.isNull();
-    if (m_socket.readDatagram(buffer.data(), buffer.size(), hostInvalid ? &m_host : nullptr) < 0) {
+    if (m_socket.readDatagram(buffer.data(), buffer.size()) < 0) {
         qWarning() << "Couldn't read datagram - discarded";
         return;
-    }
-
-    if (hostInvalid) {
-        emit hostChanged();
     }
 
     auto offsetPtr = buffer.data();

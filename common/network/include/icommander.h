@@ -20,7 +20,10 @@ public:
     virtual void connectToHost(const QHostAddress &host, uint16_t port) = 0;
     virtual void disconnectFromHost() = 0;
 
+    virtual QString errorString() = 0;
+
 signals:
     void connected();
     void disconnected();
+    void errorOccurred();
 };

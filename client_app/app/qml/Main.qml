@@ -16,8 +16,5 @@ Window {
         id: preview
         anchors.fill: parent
         focus: true
-
-        Keys.onPressed: controller.onKeyPressed(event.key)
-        Keys.onReleased: controller.onKeyReleased(event.key)
     }
 }

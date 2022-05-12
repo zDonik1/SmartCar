@@ -23,9 +23,6 @@ public:
     virtual bool start(uint16_t port) = 0;
     virtual void stop() = 0;
 
-    virtual const QHostAddress &host() const = 0;
-
 signals:
     void receivedFrame(FramePtr frame);
-    void hostChanged();
 };

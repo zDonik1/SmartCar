@@ -16,6 +16,7 @@
 #include <noobstacleinfront.h>
 #include <avoidernotblocked.h>
 #include <doonce.h>
+#include <common.h>
 
 using namespace std;
 using namespace BT;
@@ -33,11 +34,21 @@ Controller::Controller(std::shared_ptr<IUSSensor> usSensor,
                        QObject *parent)
     : QObject(parent), m_blackboard(Blackboard::create()), m_usSensor(usSensor),
       m_movement(movement), m_frontObstacleDetector(frontObstacleDetector), m_camera(camera),
-      m_tickInterval(tickInterval), m_isDebug(isDebug)
+      m_receiver(CONTROL_PORT), m_tickInterval(tickInterval), m_isDebug(isDebug)
 {
     registerNodes();
 
     connect(m_camera.get(), &ICamera::frameReady, this, [this](FramePtr frame) { m_frame = frame; });
+
+    connect(&m_receiver, &ICommandReceiver::connected, this, [this] {
+        m_imageSender = make_unique<ImageSender>(m_receiver.host(), FRAME_PORT);
+
+        connect(m_camera.get(), &ICamera::frameReady, m_imageSender.get(), &IImageSender::sendFrame);
+
+        m_imageSender->start();
+    });
+
+    connect(&m_receiver, &ICommandReceiver::disconnected, this, &Controller::stopImageSender);
 
     connect(&m_tickTimer, &QTimer::timeout, this, &Controller::tickTree);
 
@@ -101,16 +112,17 @@ void Controller::start()
         return;
     }
 
-    m_tickTimer.start(m_tickInterval);
     m_camera->start();
+    m_tickTimer.start(m_tickInterval);
     startSensors();
     requestSensorsUpdate();
 }
 
 void Controller::stop()
 {
-    m_tickTimer.stop();
     m_camera->stop();
+    m_imageSender->stop();
+    m_tickTimer.stop();
     stopSensors();
 }
 
@@ -118,6 +130,15 @@ void Controller::tickTree()
 {
     requestSensorsUpdate();
     m_tree.tickRoot();
+}
+
+void Controller::stopImageSender()
+{
+    if (!m_imageSender)
+        return;
+
+    m_imageSender->stop();
+    m_imageSender.release();
 }
 
 void Controller::registerNodes()

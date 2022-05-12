@@ -32,11 +32,11 @@ int main(int argc, char *argv[])
 
     QCoreApplication a(argc, argv);
 
-//    auto movement = make_shared<Movement>(make_unique<MotorActuator>(MOTOR_LEFT_FORWARD_PIN,
-//                                                                     MOTOR_LEFT_BACKWARD_PIN),
-//                                          make_unique<MotorActuator>(MOTOR_RIGHT_FORWARD_PIN,
-//                                                                     MOTOR_RIGHT_BACKWARD_PIN));
-    auto movement = make_shared<DebugMovement>();
+    auto movement = make_shared<Movement>(make_unique<MotorActuator>(MOTOR_LEFT_FORWARD_PIN,
+                                                                     MOTOR_LEFT_BACKWARD_PIN),
+                                          make_unique<MotorActuator>(MOTOR_RIGHT_FORWARD_PIN,
+                                                                     MOTOR_RIGHT_BACKWARD_PIN));
+//    auto movement = make_shared<DebugMovement>();
 
     Controller controller(make_shared<LCCamera>(DEFAULT_CAMERA, CAPTURE_HEIGHT, CAPTURE_WIDTH),
                           movement);
