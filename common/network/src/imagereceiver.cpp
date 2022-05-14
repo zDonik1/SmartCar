@@ -14,7 +14,7 @@
 using namespace std;
 
 ImageReceiver::ImageReceiver(QObject *parent)
-    : IImageReceiver(parent), m_mat(SCALED_IMAGE_HEIGHT, SCALED_IMAGE_WIDTH, CV_8UC1)
+    : IImageReceiver(parent), m_mat(SCALED_IMAGE_HEIGHT, SCALED_IMAGE_WIDTH, CV_8UC3)
 {
     connect(&m_socket, &QAbstractSocket::readyRead, this, &ImageReceiver::readFrames);
 

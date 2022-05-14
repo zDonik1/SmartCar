@@ -27,7 +27,6 @@ Controller::Controller(const QHostAddress &host, QObject *parent)
 
     connect(&m_commander, &ICommander::errorOccurred, this, [this, host] {
         qDebug() << "Error occurred:" << m_commander.errorString();
-        m_commander.connectToHost(host, CONTROL_PORT);
     });
 
 
