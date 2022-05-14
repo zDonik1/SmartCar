@@ -36,4 +36,13 @@ struct Vector
     bool operator==(const Vector &other) const { return compare(other.x, other.y); }
 
     bool operator!=(const Vector &other) const { return !(*this == other); }
+
+    Vector operator*(float m) const { return {x * m, y * m}; }
+
+    Vector &operator*=(float m)
+    {
+        x *= m;
+        y *= m;
+        return *this;
+    }
 };

@@ -19,6 +19,8 @@ public:
     virtual void connectToHost(const QHostAddress &host, uint16_t port) override;
     virtual void disconnectFromHost() override;
 
+    virtual QString errorString() override;
+
 private:
     QTcpSocket m_socket;
 };

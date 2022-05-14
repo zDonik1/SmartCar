@@ -9,45 +9,50 @@
 
 #include <QDebug>
 
+#include <opencv2/imgproc.hpp>
+
 #include <move.h>
 #include <avoid.h>
 #include <noobstacleinfront.h>
 #include <avoidernotblocked.h>
 #include <doonce.h>
+#include <common.h>
 
 using namespace std;
 using namespace BT;
+using namespace tflite;
+using namespace cv;
 
 constexpr auto SENSOR_UPDATE_INTERVAL = 0; // ms, 0 means manual ticking
 
 Controller::Controller(std::shared_ptr<IUSSensor> usSensor,
-                       std::shared_ptr<IIRSensor> leftTracerSensor,
-                       std::shared_ptr<IIRSensor> rightTracerSensor,
-                       std::shared_ptr<IIRSensor> leftDetectorSensor,
-                       std::shared_ptr<IIRSensor> rightDetectorSensor,
                        std::shared_ptr<IMovement> movement,
-                       std::shared_ptr<IAvoider> tracer,
-                       std::shared_ptr<IAvoider> sideObstacleDetector,
                        std::shared_ptr<IUSObstacleDetector> frontObstacleDetector,
+                       std::shared_ptr<ICamera> camera,
                        int tickInterval,
                        bool isDebug,
                        QObject *parent)
     : QObject(parent), m_blackboard(Blackboard::create()), m_usSensor(usSensor),
-      m_leftTracerSensor(leftTracerSensor), m_rightTracerSensor(rightTracerSensor),
-      m_leftDetectorSensor(leftDetectorSensor), m_rightDetectorSensor(rightDetectorSensor),
-      m_movement(movement), m_tracer(tracer), m_sideObstacleDetector(sideObstacleDetector),
-      m_frontObstacleDetector(frontObstacleDetector), m_tickInterval(tickInterval),
-      m_isDebug(isDebug)
+      m_movement(movement), m_frontObstacleDetector(frontObstacleDetector), m_camera(camera),
+      m_receiver(CONTROL_PORT), m_tickInterval(tickInterval), m_isDebug(isDebug)
 {
     registerNodes();
+
+    connect(m_camera.get(), &ICamera::frameReady, this, [this](FramePtr frame) { m_frame = frame; });
+
+    connect(&m_receiver, &ICommandReceiver::connected, this, [this] {
+        m_imageSender = make_unique<ImageSender>(m_receiver.host(), FRAME_PORT);
+
+        connect(m_camera.get(), &ICamera::frameReady, m_imageSender.get(), &IImageSender::sendFrame);
+
+        m_imageSender->start();
+    });
+
+    connect(&m_receiver, &ICommandReceiver::disconnected, this, &Controller::stopImageSender);
 
     connect(&m_tickTimer, &QTimer::timeout, this, &Controller::tickTree);
 
     m_sensors.push_back(m_usSensor);
-    m_sensors.push_back(m_leftTracerSensor);
-    m_sensors.push_back(m_rightTracerSensor);
-    m_sensors.push_back(m_leftDetectorSensor);
-    m_sensors.push_back(m_rightDetectorSensor);
 }
 
 Controller::~Controller()
@@ -59,6 +64,7 @@ bool Controller::makeTreeFromFile(const std::string &filename)
 {
     try {
         m_tree = m_factory.createTreeFromFile(filename, m_blackboard);
+        m_behaviorTreeInitialized = true;
         if (m_isDebug) {
             m_logger = make_unique<StdCoutLogger>(m_tree);
         }
@@ -73,6 +79,7 @@ bool Controller::makeTreeFromText(const std::string &text)
 {
     try {
         m_tree = m_factory.createTreeFromText(text, m_blackboard);
+        m_behaviorTreeInitialized = true;
         if (m_isDebug) {
             m_logger = make_unique<StdCoutLogger>(m_tree);
         }
@@ -83,8 +90,29 @@ bool Controller::makeTreeFromText(const std::string &text)
     return true;
 }
 
+bool Controller::makeModelFromFile(const std::string &filename)
+{
+    m_model = FlatBufferModel::BuildFromFile(filename.c_str());
+    if (!m_model)
+        return false;
+
+    if (InterpreterBuilder(*m_model, m_resolver)(&m_interpreter) != kTfLiteOk)
+        return false;
+
+    if (m_interpreter->AllocateTensors() != kTfLiteOk)
+        return false;
+
+    return true;
+}
+
 void Controller::start()
 {
+    if (!m_behaviorTreeInitialized) {
+        qWarning() << "The behavior tree has not been initalized";
+        return;
+    }
+
+    m_camera->start();
     m_tickTimer.start(m_tickInterval);
     startSensors();
     requestSensorsUpdate();
@@ -92,6 +120,8 @@ void Controller::start()
 
 void Controller::stop()
 {
+    m_camera->stop();
+    m_imageSender->stop();
     m_tickTimer.stop();
     stopSensors();
 }
@@ -100,6 +130,15 @@ void Controller::tickTree()
 {
     requestSensorsUpdate();
     m_tree.tickRoot();
+}
+
+void Controller::stopImageSender()
+{
+    if (!m_imageSender)
+        return;
+
+    m_imageSender->stop();
+    m_imageSender.release();
 }
 
 void Controller::registerNodes()
@@ -114,18 +153,49 @@ void Controller::registerNodes()
         return make_unique<Stop>(m_movement, name);
     };
 
-    auto avoidObstacleBuilder = [this](const string &name, const NodeConfiguration &config) {
-        return make_unique<Avoid>(m_movement, m_sideObstacleDetector, name, config);
-    };
-
-    auto avoidLineBuilder = [this](const string &name, const NodeConfiguration &config) {
-        return make_unique<Avoid>(m_movement, m_tracer, name, config);
-    };
-
     m_factory.registerBuilder<Move>("Move", moveBuilder);
     m_factory.registerBuilder<Stop>("Stop", stopBuilder);
-    m_factory.registerBuilder<Avoid>("AvoidObstacle", avoidObstacleBuilder);
-    m_factory.registerBuilder<Avoid>("AvoidLine", avoidLineBuilder);
+
+    m_factory.registerSimpleAction("FollowLane", [this](TreeNode &) {
+        if (!m_frame)
+            return NodeStatus::FAILURE;
+
+        preprocessFrame(m_frame);
+        auto tensor = m_interpreter->input_tensor(0);
+        auto &mat = m_frame->image;
+        int count = 0; // count of current elements in relation to data in input tensor
+        for (int i = 0; i < mat.rows; ++i) {
+            for (int j = 0; j < mat.cols; ++j) {
+                for (int k = 0; k < mat.channels(); ++k) {
+                    tensor->data.f[count++] = static_cast<float>(mat.at<uchar>(i, j, k)) / 255;
+                }
+            }
+        }
+
+        if (m_interpreter->Invoke() != kTfLiteOk) {
+            qWarning() << "Couldn't run prediction";
+            return NodeStatus::FAILURE;
+        }
+
+        auto output = *m_interpreter->typed_output_tensor<float>(0);
+
+        qDebug() << output;
+        //        qDebug() << vector.x << vector.y;
+        Vector vector;
+        auto delta = 35;
+        if (output < 90 - delta) {
+            vector = {1.f, 0.8f};
+        } else if (output > 90 + delta) {
+            vector = {-1.f, 0.8f};
+        } else {
+            vector = {static_cast<float>(cos(output * M_PI / 180)),
+                      static_cast<float>(sin(output * M_PI / 180))};
+            vector *= 0.5;
+        }
+        qDebug() << vector.x << vector.y;
+        m_movement->move(vector);
+        return NodeStatus::SUCCESS;
+    });
 
 
     // ---- condition nodes
@@ -134,17 +204,7 @@ void Controller::registerNodes()
         return make_unique<NoObstacleInFront>(m_usSensor, name, config);
     };
 
-    auto sidesNotBlockedBuilder = [this](const string &name, const NodeConfiguration &config) {
-        return make_unique<AvoiderNotBlocked>(m_sideObstacleDetector, name, config);
-    };
-
-    auto tracersNotBlockedBuilder = [this](const string &name, const NodeConfiguration &config) {
-        return make_unique<AvoiderNotBlocked>(m_tracer, name, config);
-    };
-
     m_factory.registerBuilder<NoObstacleInFront>("NoObstacleInFront", noObstacleInFrontBuilder);
-    m_factory.registerBuilder<AvoiderNotBlocked>("SidesNotBlocked", sidesNotBlockedBuilder);
-    m_factory.registerBuilder<AvoiderNotBlocked>("TracersNotBlocked", tracersNotBlockedBuilder);
 
 
     // ---- decorator nodes
@@ -180,4 +240,13 @@ void Controller::requestSensorsUpdate()
     for (const auto &sensor : m_sensors) {
         sensor->requestReading();
     }
+}
+
+void Controller::preprocessFrame(FramePtr frame)
+{
+    Rect cropRect(0, frame->image.rows / 2, frame->image.cols, frame->image.rows / 2);
+    frame->image = frame->image(cropRect);
+    cvtColor(frame->image, frame->image, COLOR_BGR2YUV);
+    GaussianBlur(frame->image, frame->image, {3, 3}, 0);
+    resize(frame->image, frame->image, {200, 66});
 }

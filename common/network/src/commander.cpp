@@ -11,6 +11,7 @@ Commander::Commander(QObject *parent) : ICommander(parent)
 {
     connect(&m_socket, &QAbstractSocket::connected, this, &ICommander::connected);
     connect(&m_socket, &QAbstractSocket::disconnected, this, &ICommander::disconnected);
+    connect(&m_socket, &QAbstractSocket::errorOccurred, this, &ICommander::errorOccurred);
 }
 
 void Commander::connectToHost(const QHostAddress &host, uint16_t port)
@@ -21,4 +22,9 @@ void Commander::connectToHost(const QHostAddress &host, uint16_t port)
 void Commander::disconnectFromHost()
 {
     m_socket.disconnectFromHost();
+}
+
+QString Commander::errorString()
+{
+    return m_socket.errorString();
 }

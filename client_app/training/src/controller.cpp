@@ -7,6 +7,8 @@
 
 #include <controller.h>
 
+#include <QDebug>
+
 #include <common.h>
 
 using namespace std;
@@ -14,7 +16,10 @@ using namespace std;
 Controller::Controller(shared_ptr<IMovement> movement, int tickInterval, QObject *parent)
     : QObject(parent), m_movement(movement), m_tickInterval(tickInterval)
 {
-    connect(&m_timer, &QTimer::timeout, this, [this] { m_movement->move(m_vector); });
+    connect(&m_timer, &QTimer::timeout, this, [this] {
+        qDebug() << m_vector.x << m_vector.y;
+        m_movement->move(m_vector);
+    });
 }
 
 Controller::~Controller()
@@ -36,16 +41,16 @@ void Controller::onKeyPressed(Qt::Key key)
 {
     switch (key) {
     case Qt::Key_Up:
-        m_vector.y = 1;
+        m_vector.y += 1;
         break;
     case Qt::Key_Down:
-        m_vector.y = -1;
+        m_vector.y -= 1;
         break;
     case Qt::Key_Right:
-        m_vector.x = 1;
+        m_vector.x += 1;
         break;
     case Qt::Key_Left:
-        m_vector.x = -1;
+        m_vector.x -= 1;
         break;
     default:;
     }
@@ -55,12 +60,16 @@ void Controller::onKeyReleased(Qt::Key key)
 {
     switch (key) {
     case Qt::Key_Up:
+        m_vector.y -= 1;
+        break;
     case Qt::Key_Down:
-        m_vector.y = 0;
+        m_vector.y += 1;
         break;
     case Qt::Key_Right:
+        m_vector.x -= 1;
+        break;
     case Qt::Key_Left:
-        m_vector.x = 0;
+        m_vector.x += 1;
         break;
     default:;
     }

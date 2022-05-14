@@ -1,0 +1,7 @@
+<root main_tree_to_execute = "MainTree" >
+    <BehaviorTree ID="MainTree">
+        <Sequence name="main_behavior">
+            <FollowLane/>
+        </Sequence>
+    </BehaviorTree>
+</root>

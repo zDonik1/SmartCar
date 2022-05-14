@@ -16,11 +16,17 @@
 #include <behaviortree_cpp_v3/bt_factory.h>
 #include <behaviortree_cpp_v3/loggers/bt_cout_logger.h>
 
+#include <tensorflow/lite/interpreter.h>
+#include <tensorflow/lite/kernels/register.h>
+#include <tensorflow/lite/model.h>
+#include <tensorflow/lite/tools/gen_op_registration.h>
+
 #include <iussensor.h>
-#include <iirsensor.h>
 #include <imovement.h>
-#include <iavoider.h>
 #include <iusobstacledetector.h>
+#include <icamera.h>
+#include <imagesender.h>
+#include <commandreceiver.h>
 
 #include <dooncemanager.h>
 
@@ -31,14 +37,9 @@ class Controller : public QObject
 
 public:
     Controller(std::shared_ptr<IUSSensor> usSensor,
-               std::shared_ptr<IIRSensor> leftTracerSensor,
-               std::shared_ptr<IIRSensor> rightTracerSensor,
-               std::shared_ptr<IIRSensor> leftDetectorSensor,
-               std::shared_ptr<IIRSensor> rightDetectorSensor,
                std::shared_ptr<IMovement> movement,
-               std::shared_ptr<IAvoider> tracer,
-               std::shared_ptr<IAvoider> sideObstacleDetector,
                std::shared_ptr<IUSObstacleDetector> frontObstacleDetector,
+               std::shared_ptr<ICamera> camera,
                int tickInterval,
                bool isDebug = false,
                QObject *parent = nullptr);
@@ -47,6 +48,8 @@ public:
 
     bool makeTreeFromFile(const std::string &filename);
     bool makeTreeFromText(const std::string &text);
+
+    bool makeModelFromFile(const std::string &filename);
 
     void start();
     void stop();
@@ -60,11 +63,14 @@ public:
 private slots:
     void tickTree();
 
+    void stopImageSender();
+
 private:
     void registerNodes();
     void startSensors();
     void stopSensors();
     void requestSensorsUpdate();
+    void preprocessFrame(FramePtr frame);
 
 private:
     BT::Blackboard::Ptr m_blackboard;
@@ -72,20 +78,25 @@ private:
     BT::Tree m_tree;
     std::unique_ptr<BT::StdCoutLogger> m_logger;
 
+    std::unique_ptr<tflite::FlatBufferModel> m_model;
+    tflite::ops::builtin::BuiltinOpResolver m_resolver;
+    std::unique_ptr<tflite::Interpreter> m_interpreter;
+
     std::shared_ptr<IUSSensor> m_usSensor;
-    std::shared_ptr<IIRSensor> m_leftTracerSensor;
-    std::shared_ptr<IIRSensor> m_rightTracerSensor;
-    std::shared_ptr<IIRSensor> m_leftDetectorSensor;
-    std::shared_ptr<IIRSensor> m_rightDetectorSensor;
     std::vector<std::shared_ptr<ISensor>> m_sensors;
 
     std::shared_ptr<IMovement> m_movement;
-    std::shared_ptr<IAvoider> m_tracer;
-    std::shared_ptr<IAvoider> m_sideObstacleDetector;
     std::shared_ptr<IUSObstacleDetector> m_frontObstacleDetector;
+
+    std::shared_ptr<ICamera> m_camera;
+    FramePtr m_frame;
+
+    CommandReceiver m_receiver;
+    std::unique_ptr<ImageSender> m_imageSender;
 
     QTimer m_tickTimer;
     DoOnceManager m_doOnceManager;
     int m_tickInterval = 1; // ms
     bool m_isDebug = false;
+    bool m_behaviorTreeInitialized = false;
 };

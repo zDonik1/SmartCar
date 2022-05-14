@@ -9,6 +9,7 @@
 
 #include <streampreview.h>
 #include <commander.h>
+#include <imagereceiver.h>
 
 class Controller : public QObject
 {
@@ -19,10 +20,9 @@ public:
     virtual ~Controller() override;
 
     Q_INVOKABLE void setStreamPreview(StreamPreview *preview);
-    Q_INVOKABLE void onKeyPressed(Qt::Key key);
-    Q_INVOKABLE void onKeyReleased(Qt::Key key);
 
 private:
     StreamPreview *m_preview = nullptr;
     Commander m_commander;
+    ImageReceiver m_receiver;
 };
